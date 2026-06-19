@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>&#1050;&#1072;&#1083;&#1100;&#1082;&#1091;&#1083;&#1103;&#1090;&#1086;&#1088; &#1101;&#1082;&#1086;&#1085;&#1086;&#1084;&#1080;&#1080; &#1086;&#1090; &#1074;&#1085;&#1077;&#1076;&#1088;&#1077;&#1085;&#1080;&#1103; BitrixGPT</title>
+<style>
+  :root{
+    --b24-blue:#2067b0;
+    --b24-blue-dark:#15518f;
+    --b24-cyan:#15a9e1;
+    --b24-bg:#eef2f7;
+    --b24-card:#ffffff;
+    --b24-text:#1c2a3a;
+    --b24-muted:#7a8aa0;
+    --b24-line:#e3e9f1;
+    --b24-green:#1fa463;
+    --b24-soft-blue:#eaf3fc;
+    --b24-soft-green:#e8f6ef;
+    --radius:14px;
+    --shadow:0 2px 14px rgba(32,103,176,.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--b24-bg);
+    color:var(--b24-text);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+  .head{
+    background:linear-gradient(135deg,var(--b24-blue),var(--b24-cyan));
+    color:#fff;border-radius:var(--radius);padding:26px 28px;margin-bottom:22px;
+    box-shadow:var(--shadow);
+  }
+  .head h1{margin:0 0 6px;font-size:24px;font-weight:700}
+  .head p{margin:0;opacity:.92;font-size:14.5px;max-width:680px}
+  .hint{
+    background:var(--b24-soft-blue);border:1px solid #d4e6f8;color:#225b8f;
+    border-radius:10px;padding:12px 16px;font-size:14px;margin-bottom:22px;
+  }
+
+  /* \433 \440 \443 \43F \43F \430  CRM */
+  .group-crm{
+    background:linear-gradient(180deg,#eef6fd,#f7fafd);
+    border:1.5px solid #d4e6f8;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-label{
+    display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;
+    color:var(--b24-blue);text-transform:uppercase;letter-spacing:.7px;margin:4px 4px 12px;
+  }
+  .group-label svg{width:18px;height:18px}
+  .group-crm .card{box-shadow:0 1px 6px rgba(32,103,176,.06)}
+
+  /* \433 \440 \443 \43F \43F \430  \418 \418 -\430 \433 \435 \43D \442 \44B  */
+  .group-agents{
+    background:linear-gradient(180deg,#f1ecfd,#f8f6fe);
+    border:1.5px solid #ddd0f5;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-agents .group-label{color:#6b3fd4}
+  .group-agents .card{box-shadow:0 1px 6px rgba(108,63,209,.07)}
+  .group-agents .card.active{border-color:#6b3fd4}
+
+  /* \433 \440 \443 \43F \43F \430  \AB \414 \440 \443 \433 \438 \435  \441 \446 \435 \43D \430 \440 \438 \438 \BB  */
+  .group-other{
+    background:linear-gradient(180deg,#f3f5f8,#f9fbfc);
+    border:1.5px solid #e3e9f1;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-other .group-label{color:#5a6b82}
+  .group-other .card{box-shadow:0 1px 6px rgba(70,90,120,.06)}
+
+  /* \433 \440 \443 \43F \43F \430  VibeCode */
+  .group-vibe{
+    background:linear-gradient(180deg,#fff3ec,#fffaf6);
+    border:1.5px solid #f6d9c4;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-vibe .group-label{color:#c2651f}
+  .group-vibe .card{box-shadow:0 1px 6px rgba(194,101,31,.07)}
+  .group-vibe .card.active{border-color:#c2651f}
+
+  /* \43D \430 \432 \438 \433 \430 \446 \438 \44F  */
+  .navbar{
+    position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;
+    background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    border:1px solid var(--b24-line);border-radius:12px;padding:9px 12px;margin-bottom:16px;box-shadow:var(--shadow);
+  }
+  .navbar .navchips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+  .navbar .chip{
+    font:inherit;font-size:13px;font-weight:600;color:var(--b24-blue);background:var(--b24-soft-blue);
+    border:0;border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:background .15s;
+  }
+  .navbar .chip:hover{background:#d8e9fa}
+  .navbar .chip.go-summary{color:#fff;background:var(--b24-blue)}
+  .navbar .chip.go-summary:hover{background:var(--b24-blue-dark)}
+  .navbar .mini{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--b24-muted);white-space:nowrap}
+  .navbar .mini b{color:var(--b24-blue);font-size:14.5px;font-variant-numeric:tabular-nums}
+  .group-crm,.group-agents,.group-other,.group-vibe,.summary{scroll-margin-top:72px}
+  @media(max-width:560px){
+    .navbar .mini .cnt{display:none}
+  }
+
+  .card{
+    background:var(--b24-card);border:1px solid var(--b24-line);border-radius:var(--radius);
+    margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s;
+  }
+  .group-crm .card:last-child{margin-bottom:0}
+  .card.active{border-color:var(--b24-blue)}
+  .card-head{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;cursor:pointer;user-select:none}
+  .card-head:hover{background:#fafcfe}
+  .chk{
+    appearance:none;-webkit-appearance:none;min-width:22px;height:22px;margin-top:2px;
+    border:2px solid #c3d2e5;border-radius:6px;cursor:pointer;position:relative;background:#fff;transition:.15s;
+  }
+  .chk:checked{background:var(--b24-blue);border-color:var(--b24-blue)}
+  .chk:checked::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .card-title{flex:1}
+  .card-title .t{font-size:16.5px;font-weight:600}
+  .card-title .s{font-size:13.5px;color:var(--b24-muted);margin-top:3px}
+  .more{
+    display:inline-flex;align-items:center;gap:5px;margin-top:9px;
+    font-size:13px;font-weight:600;color:var(--b24-blue);text-decoration:none;
+  }
+  .more:hover{text-decoration:underline}
+  .more svg{width:14px;height:14px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.2px}
+  .tag.fot{background:var(--b24-soft-blue);color:var(--b24-blue)}
+  .tag.rev{background:var(--b24-soft-green);color:var(--b24-green)}
+  .tag.role{background:#f1f3f7;color:#5a6b82}
+  .card-body{display:none;padding:0 20px 20px;border-top:1px solid var(--b24-line)}
+  .card.active .card-body{display:block}
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0 6px}
+  .field label{display:block;font-size:13px;color:var(--b24-muted);margin-bottom:5px}
+  .field .in{display:flex;align-items:center;border:1.5px solid var(--b24-line);border-radius:9px;background:#fff;overflow:hidden;transition:border-color .15s}
+  .field .in:focus-within{border-color:var(--b24-blue)}
+  .field input{flex:1;border:0;outline:0;padding:9px 11px;font-size:15px;width:100%;background:transparent;color:var(--b24-text);font-family:inherit;font-variant-numeric:tabular-nums}
+  .field input:disabled{color:var(--b24-muted);background:#f6f8fb}
+  .field .suf{font-size:12.5px;color:var(--b24-muted);padding:0 11px;white-space:nowrap}
+  .field.locked label::after{content:" \B7  \444 \438 \43A \441 .";color:#b3bccb}
+  .err{color:#d23f3f;font-size:12.5px;margin-top:5px;display:none}
+  .field.invalid .in{border-color:#d23f3f}
+  .field.invalid .err{display:block}
+  .result{margin-top:16px;background:#f7fafd;border:1px solid var(--b24-line);border-radius:11px;padding:14px 16px}
+  .res-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:14px}
+  .res-row .lbl{color:var(--b24-muted)}
+  .res-row .val{font-weight:600;font-variant-numeric:tabular-nums}
+  .res-row.total{border-top:1px dashed #d6e0ec;margin-top:6px;padding-top:10px;font-size:15px}
+  .res-row.total .val{color:var(--b24-blue)}
+  .res-row .val.rev{color:var(--b24-green)}
+  .breakdown{font-size:12.5px;color:var(--b24-muted);margin:2px 0 8px;padding-left:2px}
+  .breakdown div{padding:2px 0}
+  .note{font-size:13px;color:#5a6b82;background:#fffaf0;border:1px solid #f3e6c4;border-radius:9px;padding:10px 13px;margin-top:12px}
+  .summary{
+    margin-top:26px;background:linear-gradient(135deg,#143b66,#1d6fb8);color:#fff;
+    border-radius:var(--radius);padding:24px 26px;box-shadow:var(--shadow);
+  }
+  .summary h2{margin:0 0 16px;font-size:19px}
+  .sum-grid{display:grid;grid-template-columns:1fr auto auto;gap:10px 22px;align-items:baseline}
+  .sum-grid .h{font-size:12px;text-transform:uppercase;letter-spacing:.6px;opacity:.7;font-weight:600;text-align:right}
+  .sum-grid .lbl{font-size:14.5px;opacity:.95}
+  .sum-grid .num{font-size:15.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sum-grid .grand{font-size:19px;font-weight:800}
+  .sum-grid .grand.eco{color:#9ff5c4}
+  .sum-line{grid-column:1/-1;height:1px;background:rgba(255,255,255,.22);margin:6px 0}
+  .sum-grid .row-total .lbl{font-weight:700;opacity:1}
+  .sum-grid .cost .lbl,.sum-grid .lbl.cost{opacity:.7;font-size:13.5px}
+  .sum-grid .num.cost{opacity:.7;font-size:13.5px;font-weight:600}
+  .verdict{grid-column:1/-1;margin-top:12px;display:flex;align-items:center;gap:9px;
+    background:rgba(31,164,99,.18);border:1px solid rgba(159,245,196,.45);
+    border-radius:10px;padding:11px 14px;font-size:14px}
+  .verdict svg{width:18px;height:18px;color:#9ff5c4;flex:none}
+  .verdict b{color:#9ff5c4}
+  .summary .empty{opacity:.85;font-size:14.5px}
+  .qual{margin-top:16px;background:rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;font-size:14px}
+  .foot{text-align:center;color:var(--b24-muted);font-size:12.5px;margin-top:22px}
+  @media(max-width:560px){
+    .head{padding:20px}
+    .head h1{font-size:20px}
+    .sum-grid{grid-template-columns:1fr auto;gap:8px 14px}
+    .sum-grid .h.year,.sum-grid .num.year{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>&#1050;&#1072;&#1083;&#1100;&#1082;&#1091;&#1083;&#1103;&#1090;&#1086;&#1088; &#1101;&#1082;&#1086;&#1085;&#1086;&#1084;&#1080;&#1080; &#1086;&#1090; &#1074;&#1085;&#1077;&#1076;&#1088;&#1077;&#1085;&#1080;&#1103; BitrixGPT</h1>
+    <p>&#1054;&#1094;&#1077;&#1085;&#1080;&#1090;&#1077; &#1101;&#1082;&#1086;&#1085;&#1086;&#1084;&#1080;&#1095;&#1077;&#1089;&#1082;&#1080;&#1081; &#1101;&#1092;&#1092;&#1077;&#1082;&#1090; &#1086;&#1090; &#1074;&#1085;&#1077;&#1076;&#1088;&#1077;&#1085;&#1080;&#1103; &#1048;&#1048; BitrixGPT &#1074; &#1041;&#1080;&#1090;&#1088;&#1080;&#1082;&#1089;24. &#1054;&#1090;&#1084;&#1077;&#1090;&#1100;&#1090;&#1077; &#1088;&#1077;&#1083;&#1077;&#1074;&#1072;&#1085;&#1090;&#1085;&#1099;&#1077; &#1089;&#1094;&#1077;&#1085;&#1072;&#1088;&#1080;&#1080; &#1080; &#1087;&#1088;&#1080; &#1085;&#1077;&#1086;&#1073;&#1093;&#1086;&#1076;&#1080;&#1084;&#1086;&#1089;&#1090;&#1080; &#1089;&#1082;&#1086;&#1088;&#1088;&#1077;&#1082;&#1090;&#1080;&#1088;&#1091;&#1081;&#1090;&#1077; &#1079;&#1085;&#1072;&#1095;&#1077;&#1085;&#1080;&#1103; &#8212; &#1088;&#1072;&#1089;&#1095;&#1105;&#1090; &#1086;&#1073;&#1085;&#1086;&#1074;&#1083;&#1103;&#1077;&#1090;&#1089;&#1103; &#1084;&#1075;&#1085;&#1086;&#1074;&#1077;&#1085;&#1085;&#1086;.</p>
+  </div>
+  <div class="hint">&#1042;&#1099;&#1073;&#1077;&#1088;&#1080;&#1090;&#1077; &#1075;&#1072;&#1083;&#1086;&#1095;&#1082;&#1086;&#1081; &#1089;&#1094;&#1077;&#1085;&#1072;&#1088;&#1080;&#1080;, &#1082;&#1086;&#1090;&#1086;&#1088;&#1099;&#1077; &#1087;&#1086;&#1076;&#1093;&#1086;&#1076;&#1103;&#1090; &#1074;&#1072;&#1096;&#1077;&#1084;&#1091; &#1073;&#1080;&#1079;&#1085;&#1077;&#1089;&#1091;. &#1044;&#1083;&#1103; &#1082;&#1072;&#1078;&#1076;&#1086;&#1075;&#1086; &#1084;&#1086;&#1078;&#1085;&#1086; &#1080;&#1079;&#1084;&#1077;&#1085;&#1080;&#1090;&#1100; &#1080;&#1089;&#1093;&#1086;&#1076;&#1085;&#1099;&#1077; &#1076;&#1072;&#1085;&#1085;&#1099;&#1077; &#8212; &#1080;&#1090;&#1086;&#1075; &#1087;&#1077;&#1088;&#1077;&#1089;&#1095;&#1080;&#1090;&#1072;&#1077;&#1090;&#1089;&#1103; &#1072;&#1074;&#1090;&#1086;&#1084;&#1072;&#1090;&#1080;&#1095;&#1077;&#1089;&#1082;&#1080;.</div>
+
+  <div class="navbar">
+    <div class="navchips">
+      <button class="chip" data-go="sec-crm">&#1057;&#1094;&#1077;&#1085;&#1072;&#1088;&#1080;&#1080; &#1074; CRM</button>
+      <button class="chip" data-go="sec-agents">&#1048;&#1048;-&#1072;&#1075;&#1077;&#1085;&#1090;&#1099;</button>
+      <button class="chip" data-go="sec-other">&#1044;&#1088;&#1091;&#1075;&#1080;&#1077;</button>
+      <button class="chip" data-go="sec-vibe">VibeCode</button>
+      <button class="chip go-summary" data-go="sec-summary">&#1048;&#1090;&#1086;&#1075; &#8595;</button>
+    </div>
+    <div class="mini">
+      <span class="cnt" id="nav-count">&#1053;&#1080;&#1095;&#1077;&#1075;&#1086; &#1085;&#1077; &#1074;&#1099;&#1073;&#1088;&#1072;&#1085;&#1086;</span>
+      <span id="nav-total"></span>
+    </div>
+  </div>
+
+  <div id="scenarios"></div>
+
+  <div class="summary" id="sec-summary">
+    <h2>&#1054;&#1073;&#1097;&#1080;&#1081; &#1101;&#1092;&#1092;&#1077;&#1082;&#1090; BitrixGPT</h2>
+    <div id="summary-body"></div>
+  </div>
+
+  <div class="foot">&#1042;&#1089;&#1077; &#1089;&#1091;&#1084;&#1084;&#1099; &#8212; &#1074; &#1088;&#1091;&#1073;&#1083;&#1103;&#1093;, &#1086;&#1082;&#1088;&#1091;&#1075;&#1083;&#1077;&#1085;&#1080;&#1077; &#1076;&#1086; &#1094;&#1077;&#1083;&#1099;&#1093;. &#1053;&#1072;&#1083;&#1086;&#1075;&#1086;&#1074;&#1072;&#1103; &#1084;&#1086;&#1076;&#1077;&#1083;&#1100; &#1091;&#1087;&#1088;&#1086;&#1097;&#1105;&#1085;&#1085;&#1072;&#1103; (&#1086;&#1082;&#1083;&#1072;&#1076; &#1085;&#1072; &#1088;&#1091;&#1082;&#1080; &#215; 1,4). &#1056;&#1072;&#1089;&#1095;&#1105;&#1090; &#1085;&#1086;&#1089;&#1080;&#1090; &#1086;&#1094;&#1077;&#1085;&#1086;&#1095;&#1085;&#1099;&#1081; &#1093;&#1072;&#1088;&#1072;&#1082;&#1090;&#1077;&#1088;.</div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- \u0411\u0430\u0437\u043e\u0432\u044b\u0435 \u043a\u043e\u043d\u0441\u0442\u0430\u043d\u0442\u044b \u0438 \u0444\u043e\u0440\u043c\u0443\u043b\u044b (\u0413\u043b\u043e\u0441\u0441\u0430\u0440\u0438\u0439) ---------- */
+const TAX = 1.4;          // \u043d\u0430\u043b\u043e\u0433\u043e\u0432\u0430\u044f \u043d\u0430\u0433\u0440\u0443\u0437\u043a\u0430
+const HOURS_MONTH = 176;  // \u0440\u0430\u0431\u043e\u0447\u0438\u0445 \u0447\u0430\u0441\u043e\u0432 \u0432 \u043c\u0435\u0441\u044f\u0446\u0435
+const DAYS_MONTH = 22;    // \u0440\u0430\u0431\u043e\u0447\u0438\u0445 \u0434\u043d\u0435\u0439 \u0432 \u043c\u0435\u0441\u044f\u0446\u0435
+const DAY_HOURS = 8;      // \u0434\u043b\u0438\u043d\u0430 \u0440\u0430\u0431\u043e\u0447\u0435\u0433\u043e \u0434\u043d\u044f
+
+const costHour   = salary => salary * TAX / HOURS_MONTH;       // \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u0447\u0430\u0441\u0430
+const costMinute = salary => costHour(salary) / 60;            // \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c \u043c\u0438\u043d\u0443\u0442\u044b
+
+const COST_YEAR = 9600;   // \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c BitrixGPT, \u20bd/\u0433\u043e\u0434 (\u043e\u0442)
+
+/* ---------- \u041a\u043e\u043d\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044f \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0435\u0432 (\u0432 \u043f\u043e\u0440\u044f\u0434\u043a\u0435 \u043e\u0442\u043e\u0431\u0440\u0430\u0436\u0435\u043d\u0438\u044f) ---------- */
+const scenarios = [
+  {
+    id:1,
+    title:"\u0420\u0430\u0441\u0448\u0438\u0444\u0440\u043e\u0432\u043a\u0430 \u0437\u0432\u043e\u043d\u043a\u043e\u0432 \u0438 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u0441\u0434\u0435\u043b\u043a\u0438",
+    sub:"BitrixGPT \u0440\u0430\u0441\u0448\u0438\u0444\u0440\u043e\u0432\u044b\u0432\u0430\u0435\u0442 \u0437\u0432\u043e\u043d\u043a\u0438 \u0438 \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0447\u0435\u0441\u043a\u0438 \u0437\u0430\u043f\u043e\u043b\u043d\u044f\u0435\u0442 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0443 \u0441\u0434\u0435\u043b\u043a\u0438 \u2014 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440 \u043d\u0435 \u0441\u043b\u0443\u0448\u0430\u0435\u0442 \u0437\u0430\u043f\u0438\u0441\u0438 \u0438 \u043d\u0435 \u0437\u0430\u043f\u043e\u043b\u043d\u044f\u0435\u0442 \u043f\u043e\u043b\u044f \u0432\u0440\u0443\u0447\u043d\u0443\u044e.",
+    link:"https://helpdesk.bitrix24.ru/open/18799442/",
+    role:"\u041c\u0435\u043d\u0435\u0434\u0436\u0435\u0440 \u043f\u043e \u043f\u0440\u043e\u0434\u0430\u0436\u0430\u043c", effect:["fot","rev"], crm:true,
+    fields:[
+      {k:"mgr",   label:"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u043e\u0432",            def:1,        suf:"\u0447\u0435\u043b."},
+      {k:"sal",   label:"\u041e\u043a\u043b\u0430\u0434 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430 (\u043d\u0430 \u0440\u0443\u043a\u0438)",        def:100000,   suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"calls", label:"\u0417\u0432\u043e\u043d\u043a\u043e\u0432 \u0432 \u0434\u0435\u043d\u044c \u043d\u0430 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430",      def:20,       suf:"\u0448\u0442."},
+      {k:"time",  label:"\u0412\u0440\u0435\u043c\u044f \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0438 \u043e\u0434\u043d\u043e\u0433\u043e \u0437\u0432\u043e\u043d\u043a\u0430",    def:10,       suf:"\u043c\u0438\u043d"},
+      {k:"plan",  label:"\u041f\u043b\u0430\u043d \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430",                   def:1000000,  suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"coef",  label:"\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u0440\u0435\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438 \u043f\u0440\u0438\u0440\u043e\u0441\u0442\u0430",  def:0.3,      suf:"\u0434\u043e\u043b\u044f"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.calls * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.mgr;
+      const freedShare = (savedMinDay / 60) / DAY_HOURS;
+      const rev = freedShare * v.plan * v.coef * v.mgr;
+      return {fot, rev};
+    }
+  },
+  {
+    id:4,
+    title:"\u041e\u0446\u0435\u043d\u043a\u0430 \u0441\u043b\u0435\u0434\u043e\u0432\u0430\u043d\u0438\u044f \u0441\u043a\u0440\u0438\u043f\u0442\u0443 (\u0420\u041e\u041f + \u0440\u0435\u0447\u0435\u0432\u0430\u044f \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430)",
+    sub:"\u0420\u041e\u041f \u0432\u0440\u0443\u0447\u043d\u0443\u044e \u043f\u0440\u043e\u0441\u043b\u0443\u0448\u0438\u0432\u0430\u0435\u0442 \u0437\u0432\u043e\u043d\u043a\u0438 \u0438 \u043e\u0446\u0435\u043d\u0438\u0432\u0430\u0435\u0442 \u0441\u043e\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0438\u0435 \u0441\u043a\u0440\u0438\u043f\u0442\u0443 (~10% \u0432\u0440\u0435\u043c\u0435\u043d\u0438). BitrixGPT \u043f\u043e\u043a\u0440\u044b\u0432\u0430\u0435\u0442 100% \u0437\u0432\u043e\u043d\u043a\u043e\u0432 \u0438 \u0434\u0435\u043b\u0430\u0435\u0442 \u043e\u0446\u0435\u043d\u043a\u0443 \u0437\u0430 \u043d\u0435\u0433\u043e.",
+    link:"https://helpdesk.bitrix24.ru/open/23240682/",
+    role:"\u0420\u0443\u043a\u043e\u0432\u043e\u0434\u0438\u0442\u0435\u043b\u044c \u043e\u0442\u0434\u0435\u043b\u0430 \u043f\u0440\u043e\u0434\u0430\u0436", effect:["fot"], crm:true,
+    fields:[
+      {k:"rop",   label:"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0420\u041e\u041f\u043e\u0432",               def:1,      suf:"\u0447\u0435\u043b."},
+      {k:"sal",   label:"\u041e\u043a\u043b\u0430\u0434 \u0420\u041e\u041f\u0430 (\u043d\u0430 \u0440\u0443\u043a\u0438)",           def:200000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"share", label:"\u0414\u043e\u043b\u044f \u0432\u0440\u0435\u043c\u0435\u043d\u0438 \u043d\u0430 \u043e\u0446\u0435\u043d\u043a\u0443 \u0441\u043a\u0440\u0438\u043f\u0442\u043e\u0432", def:0.10,  suf:"\u0434\u043e\u043b\u044f"},
+    ],
+    compute:v=>{
+      const fullCost = v.sal * TAX;
+      const fot = fullCost * v.share * v.rop;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:5,
+    title:"\u041f\u043e\u0432\u0442\u043e\u0440\u043d\u044b\u0435 \u043f\u0440\u043e\u0434\u0430\u0436\u0438 \u043f\u043e \u0431\u0430\u0437\u0435",
+    sub:"BitrixGPT \u0433\u0435\u043d\u0435\u0440\u0438\u0440\u0443\u0435\u0442 \u043f\u043e\u0432\u0442\u043e\u0440\u043d\u044b\u0435 \u043f\u0440\u043e\u0434\u0430\u0436\u0438 \u043f\u043e \u0441\u0443\u0449\u0435\u0441\u0442\u0432\u0443\u044e\u0449\u0435\u0439 \u0431\u0430\u0437\u0435 \u0438 \u0441\u0442\u0430\u0432\u0438\u0442 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430\u043c \u0441\u0434\u0435\u043b\u043a\u0438, \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u0442\u0435 \u0437\u0430\u043a\u0440\u044b\u0432\u0430\u044e\u0442.",
+    link:"https://helpdesk.bitrix24.ru/open/25376986/",
+    role:"\u042d\u0444\u0444\u0435\u043a\u0442 \u043d\u0430 \u0443\u0440\u043e\u0432\u043d\u0435 \u0432\u044b\u0440\u0443\u0447\u043a\u0438", effect:["rev"], crm:true,
+    fields:[
+      {k:"base",  label:"\u0420\u0430\u0437\u043c\u0435\u0440 \u0431\u0430\u0437\u044b \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432",            def:1000,  suf:"\u0448\u0442."},
+      {k:"check", label:"\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u0447\u0435\u043a \u0441\u0434\u0435\u043b\u043a\u0438",              def:50000, suf:"\u20bd"},
+      {k:"conv",  label:"\u041a\u043e\u043d\u0432\u0435\u0440\u0441\u0438\u044f \u0432 \u043f\u043e\u0432\u0442\u043e\u0440\u043d\u0443\u044e \u043f\u0440\u043e\u0434\u0430\u0436\u0443",   def:0.10,  suf:"\u0434\u043e\u043b\u044f", locked:true},
+    ],
+    compute:v=>{
+      const rev = v.base * v.conv * v.check;
+      return {fot:0, rev};
+    }
+  },
+  {
+    id:3,
+    title:"\u0413\u0435\u043d\u0435\u0440\u0430\u0446\u0438\u044f \u043a\u043e\u043c\u043c\u0435\u0440\u0447\u0435\u0441\u043a\u0438\u0445 \u043f\u0440\u0435\u0434\u043b\u043e\u0436\u0435\u043d\u0438\u0439 \u0438 \u043f\u0438\u0441\u0435\u043c",
+    sub:"BitrixGPT \u043f\u0438\u0448\u0435\u0442 \u041a\u041f \u0438 \u043f\u0438\u0441\u044c\u043c\u0430 \u043a\u043b\u0438\u0435\u043d\u0442\u0430\u043c \u0432\u043c\u0435\u0441\u0442\u043e \u0440\u0443\u0447\u043d\u043e\u0433\u043e \u0441\u043e\u0441\u0442\u0430\u0432\u043b\u0435\u043d\u0438\u044f \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u043e\u043c.",
+    role:"\u041c\u0435\u043d\u0435\u0434\u0436\u0435\u0440 \u043f\u043e \u043f\u0440\u043e\u0434\u0430\u0436\u0430\u043c", effect:["fot","rev"], crm:true,
+    fields:[
+      {k:"mgr",  label:"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u043e\u0432",            def:1,       suf:"\u0447\u0435\u043b."},
+      {k:"sal",  label:"\u041e\u043a\u043b\u0430\u0434 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430 (\u043d\u0430 \u0440\u0443\u043a\u0438)",        def:100000,  suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"docs", label:"\u0414\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u043e\u0432/\u043f\u0438\u0441\u0435\u043c \u0432 \u0434\u0435\u043d\u044c",          def:5,       suf:"\u0448\u0442."},
+      {k:"time", label:"\u0412\u0440\u0435\u043c\u044f \u043d\u0430 \u043e\u0434\u0438\u043d \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442",           def:20,      suf:"\u043c\u0438\u043d"},
+      {k:"plan", label:"\u041f\u043b\u0430\u043d \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430",                   def:1000000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"coef", label:"\u041a\u043e\u044d\u0444\u0444\u0438\u0446\u0438\u0435\u043d\u0442 \u0440\u0435\u0430\u043b\u0438\u0437\u0430\u0446\u0438\u0438 \u043f\u0440\u0438\u0440\u043e\u0441\u0442\u0430",  def:0.3,     suf:"\u0434\u043e\u043b\u044f"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.docs * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.mgr;
+      const freedShare = (savedMinDay / 60) / DAY_HOURS;
+      const rev = freedShare * v.plan * v.coef * v.mgr;
+      return {fot, rev};
+    }
+  },
+  {
+    id:9,
+    title:"\u0410\u0433\u0435\u043d\u0442 \u0434\u043b\u044f CRM",
+    sub:"\u041c\u0435\u043d\u0435\u0434\u0436\u0435\u0440 \u0443\u043f\u0440\u0430\u0432\u043b\u044f\u0435\u0442 CRM \u0433\u043e\u043b\u043e\u0441\u043e\u043c \u0438\u043b\u0438 \u0442\u0435\u043a\u0441\u0442\u043e\u043c \u0447\u0435\u0440\u0435\u0437 \u0418\u0418-\u0430\u0433\u0435\u043d\u0442\u0430: \u043f\u043e\u0438\u0441\u043a \u043b\u0438\u0434\u043e\u0432 \u0438 \u0441\u0434\u0435\u043b\u043e\u043a, \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435 \u0438 \u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0430\u0446\u0438\u044f \u0437\u0430\u043f\u0438\u0441\u0435\u0439, \u043f\u0440\u043e\u0432\u0435\u0440\u043a\u0430 \u0434\u0443\u0431\u043b\u0435\u0439, \u0441\u043c\u0435\u043d\u0430 \u0441\u0442\u0430\u0434\u0438\u0439/\u043e\u0442\u0432\u0435\u0442\u0441\u0442\u0432\u0435\u043d\u043d\u044b\u0445, \u0442\u043e\u0432\u0430\u0440\u043d\u044b\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438, \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430 \u043f\u043e \u0432\u043e\u0440\u043e\u043d\u043a\u0430\u043c \u2014 \u0432\u043c\u0435\u0441\u0442\u043e \u0440\u0443\u0447\u043d\u044b\u0445 \u043a\u043b\u0438\u043a\u043e\u0432.",
+    role:"\u041c\u0435\u043d\u0435\u0434\u0436\u0435\u0440 \u043f\u043e \u043f\u0440\u043e\u0434\u0430\u0436\u0430\u043c", effect:["fot"], agents:true,
+    note:"\u0423\u0447\u0438\u0442\u044b\u0432\u0430\u044e\u0442\u0441\u044f \u0440\u0443\u0442\u0438\u043d\u043d\u044b\u0435 \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u0438 \u0432 CRM (\u043f\u043e\u0438\u0441\u043a, \u0441\u043e\u0437\u0434\u0430\u043d\u0438\u0435, \u043a\u043e\u043d\u0432\u0435\u0440\u0442\u0430\u0446\u0438\u044f, \u0434\u0443\u0431\u043b\u0438, \u0441\u043c\u0435\u043d\u0430 \u0441\u0442\u0430\u0434\u0438\u0439, \u0442\u043e\u0432\u0430\u0440\u043d\u044b\u0435 \u043f\u043e\u0437\u0438\u0446\u0438\u0438, \u0430\u043d\u0430\u043b\u0438\u0442\u0438\u043a\u0430). \u041d\u0435 \u0432\u043a\u043b\u044e\u0447\u0430\u0435\u0442 \u0437\u0430\u043f\u043e\u043b\u043d\u0435\u043d\u0438\u0435 \u043a\u0430\u0440\u0442\u043e\u0447\u043a\u0438 \u043f\u043e\u0441\u043b\u0435 \u0437\u0432\u043e\u043d\u043a\u043e\u0432 \u2014 \u044d\u0442\u043e \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0439 \u00ab\u0420\u0430\u0441\u0448\u0438\u0444\u0440\u043e\u0432\u043a\u0430 \u0437\u0432\u043e\u043d\u043a\u043e\u0432\u00bb, \u0447\u0442\u043e\u0431\u044b \u043d\u0435 \u0441\u0447\u0438\u0442\u0430\u0442\u044c \u043e\u0434\u043d\u043e \u0438 \u0442\u043e \u0436\u0435 \u0432\u0440\u0435\u043c\u044f \u0434\u0432\u0430\u0436\u0434\u044b.",
+    fields:[
+      {k:"mgr",  label:"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u043e\u0432",                def:1,      suf:"\u0447\u0435\u043b."},
+      {k:"sal",  label:"\u041e\u043a\u043b\u0430\u0434 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430 (\u043d\u0430 \u0440\u0443\u043a\u0438)",            def:100000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"ops",  label:"\u041e\u043f\u0435\u0440\u0430\u0446\u0438\u0439 \u0432 CRM \u0432 \u0434\u0435\u043d\u044c \u043d\u0430 \u043c\u0435\u043d\u0435\u0434\u0436\u0435\u0440\u0430",   def:30,     suf:"\u0448\u0442."},
+      {k:"time", label:"\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u044f \u0432\u0440\u0435\u043c\u0435\u043d\u0438 \u043d\u0430 \u043e\u043f\u0435\u0440\u0430\u0446\u0438\u044e",         def:3,      suf:"\u043c\u0438\u043d"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.ops * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.mgr;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:2,
+    title:"\u0410\u0433\u0435\u043d\u0442 \u043e\u0431\u0449\u0435\u043d\u0438\u044f \u0441 \u043a\u043b\u0438\u0435\u043d\u0442\u0430\u043c\u0438",
+    sub:"BitrixGPT \u043e\u0431\u0440\u0430\u0431\u0430\u0442\u044b\u0432\u0430\u0435\u0442 \u0432\u0445\u043e\u0434\u044f\u0449\u0438\u0435 \u043e\u0431\u0440\u0430\u0449\u0435\u043d\u0438\u044f \u043a\u043b\u0438\u0435\u043d\u0442\u043e\u0432. \u0427\u0430\u0441\u0442\u044c \u0437\u0430\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0441\u0430\u043c, \u043e\u0441\u0442\u0430\u043b\u044c\u043d\u044b\u0435 \u0443\u0445\u043e\u0434\u044f\u0442 \u043e\u043f\u0435\u0440\u0430\u0442\u043e\u0440\u0443.",
+    role:"\u0421\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0438", effect:["fot"], agents:true,
+    fields:[
+      {k:"spec", label:"\u041a\u043e\u043b\u0438\u0447\u0435\u0441\u0442\u0432\u043e \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u043e\u0432 \u043f\u043e\u0434\u0434\u0435\u0440\u0436\u043a\u0438", def:1,     suf:"\u0447\u0435\u043b."},
+      {k:"sal",  label:"\u041e\u043a\u043b\u0430\u0434 \u0441\u043f\u0435\u0446\u0438\u0430\u043b\u0438\u0441\u0442\u0430 (\u043d\u0430 \u0440\u0443\u043a\u0438)",       def:70000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"total",label:"\u041e\u0431\u0440\u0430\u0449\u0435\u043d\u0438\u0439 \u0432 \u0434\u0435\u043d\u044c (\u0432\u0441\u0435\u0433\u043e)",          def:40,    suf:"\u0448\u0442."},
+      {k:"ai",   label:"\u0418\u0437 \u043d\u0438\u0445 \u0437\u0430\u043a\u0440\u044b\u0432\u0430\u0435\u0442 \u0418\u0418",               def:30,    suf:"\u0448\u0442."},
+      {k:"time", label:"\u0412\u0440\u0435\u043c\u044f \u043e\u0431\u0440\u0430\u0431\u043e\u0442\u043a\u0438 \u043e\u0434\u043d\u043e\u0433\u043e \u043e\u0431\u0440\u0430\u0449\u0435\u043d\u0438\u044f",  def:7,     suf:"\u043c\u0438\u043d"},
+    ],
+    validate:v=> v.ai>v.total ? {ai:"\u041d\u0435 \u0431\u043e\u043b\u044c\u0448\u0435 \u00ab\u043e\u0431\u0440\u0430\u0449\u0435\u043d\u0438\u0439 \u0432\u0441\u0435\u0433\u043e\u00bb"} : null,
+    compute:v=>{
+      const ai = Math.min(v.ai, v.total);
+      const savedMinDay = ai * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.spec;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:10,
+    title:"\u0410\u0433\u0435\u043d\u0442 \u043f\u043e \u0431\u0430\u0437\u0435 \u0437\u043d\u0430\u043d\u0438\u0439",
+    sub:"\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438 \u0437\u0430\u0434\u0430\u044e\u0442 \u0432\u043e\u043f\u0440\u043e\u0441\u044b \u0418\u0418-\u0430\u0433\u0435\u043d\u0442\u0443 \u0432 \u0447\u0430\u0442\u0435 \u0438 \u043c\u0433\u043d\u043e\u0432\u0435\u043d\u043d\u043e \u043f\u043e\u043b\u0443\u0447\u0430\u044e\u0442 \u043e\u0442\u0432\u0435\u0442\u044b \u0438\u0437 \u0437\u0430\u0433\u0440\u0443\u0436\u0435\u043d\u043d\u044b\u0445 \u0440\u0435\u0433\u043b\u0430\u043c\u0435\u043d\u0442\u043e\u0432 \u0438 \u0438\u043d\u0441\u0442\u0440\u0443\u043a\u0446\u0438\u0439 \u2014 \u0432\u043c\u0435\u0441\u0442\u043e \u043f\u043e\u0438\u0441\u043a\u0430 \u043f\u043e \u0434\u043e\u043a\u0443\u043c\u0435\u043d\u0442\u0430\u043c \u0438\u043b\u0438 \u043e\u0442\u0432\u043b\u0435\u0447\u0435\u043d\u0438\u044f \u043a\u043e\u043b\u043b\u0435\u0433.",
+    link:"https://helpdesk.bitrix24.ru/open/27455370/",
+    role:"\u0412\u0441\u0435 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438", effect:["fot"], agents:true,
+    note:"\u0421\u0447\u0438\u0442\u0430\u0435\u0442\u0441\u044f \u0442\u043e\u043b\u044c\u043a\u043e \u0432\u0440\u0435\u043c\u044f \u0441\u043f\u0440\u0430\u0448\u0438\u0432\u0430\u044e\u0449\u0435\u0433\u043e \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0430. \u0412\u0440\u0435\u043c\u044f \u043e\u0442\u0432\u043b\u0435\u043a\u0430\u0435\u043c\u044b\u0445 \u043a\u043e\u043b\u043b\u0435\u0433-\u044d\u043a\u0441\u043f\u0435\u0440\u0442\u043e\u0432 \u2014 \u0434\u043e\u043f\u043e\u043b\u043d\u0438\u0442\u0435\u043b\u044c\u043d\u044b\u0439 \u0431\u043e\u043d\u0443\u0441, \u043a\u043e\u0442\u043e\u0440\u044b\u0439 \u043c\u044b \u043d\u0430\u043c\u0435\u0440\u0435\u043d\u043d\u043e \u043d\u0435 \u043d\u0430\u0447\u0438\u0441\u043b\u044f\u0435\u043c. \u041d\u0435 \u0434\u0443\u0431\u043b\u0438\u0440\u0443\u0439\u0442\u0435 \u044d\u0442\u043e\u0442 \u044d\u0444\u0444\u0435\u043a\u0442 \u0441\u043e \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0435\u043c \u00abBitrixGPT \u0434\u043b\u044f \u0432\u0441\u0435\u0445\u00bb (+10%).",
+    fields:[
+      {k:"emp",   label:"\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432, \u043f\u043e\u043b\u044c\u0437\u0443\u044e\u0449\u0438\u0445\u0441\u044f \u0431\u0430\u0437\u043e\u0439 \u0437\u043d\u0430\u043d\u0438\u0439", def:50,     suf:"\u0447\u0435\u043b."},
+      {k:"sal",   label:"\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u043e\u043a\u043b\u0430\u0434 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0430",               def:100000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"q",     label:"\u041e\u0431\u0440\u0430\u0449\u0435\u043d\u0438\u0439 \u043a \u0431\u0430\u0437\u0435 \u0437\u043d\u0430\u043d\u0438\u0439 \u0432 \u0434\u0435\u043d\u044c",         def:3,      suf:"\u0448\u0442."},
+      {k:"t",     label:"\u0412\u0440\u0435\u043c\u044f \u043d\u0430 \u043f\u043e\u0438\u0441\u043a \u043e\u0442\u0432\u0435\u0442\u0430 \u0432\u0440\u0443\u0447\u043d\u0443\u044e",          def:10,     suf:"\u043c\u0438\u043d"},
+      {k:"share", label:"\u0414\u043e\u043b\u044f \u0432\u043e\u043f\u0440\u043e\u0441\u043e\u0432, \u043d\u0430 \u043a\u043e\u0442\u043e\u0440\u044b\u0435 \u043e\u0442\u0432\u0435\u0447\u0430\u0435\u0442 \u0418\u0418",  def:0.7,    suf:"\u0434\u043e\u043b\u044f"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.q * v.t * v.share;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.emp;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:6,
+    title:"Follow-up (\u0442\u0440\u0430\u043d\u0441\u043a\u0440\u0438\u0431\u0430\u0446\u0438\u044f \u043e\u0431\u0449\u0438\u0445 \u0432\u0441\u0442\u0440\u0435\u0447)",
+    sub:"\u0421\u0435\u0440\u0432\u0438\u0441 \u0442\u0440\u0430\u043d\u0441\u043a\u0440\u0438\u0431\u0438\u0440\u0443\u0435\u0442 \u0432\u0441\u0435 \u0432\u043d\u0443\u0442\u0440\u0435\u043d\u043d\u0438\u0435 \u0432\u0441\u0442\u0440\u0435\u0447\u0438: \u0432\u0440\u0435\u043c\u044f \u0432\u0441\u0442\u0440\u0435\u0447 \u0441\u043e\u043a\u0440\u0430\u0449\u0430\u0435\u0442\u0441\u044f \u043d\u0430 15%, \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u043e\u0432 \u0441\u0442\u0430\u043d\u043e\u0432\u0438\u0442\u0441\u044f \u043c\u0435\u043d\u044c\u0448\u0435 \u043d\u0430 15%, \u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043d\u0442 \u0434\u043b\u044f \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b\u0430 \u0438 \u0432\u044b\u0432\u043e\u0434\u043e\u0432 \u043d\u0435 \u043d\u0443\u0436\u0435\u043d.",
+    link:"https://helpdesk.bitrix24.ru/open/23529044/",
+    role:"\u0421\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438 + \u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043d\u0442", effect:["fot"],
+    fields:[
+      {k:"meet",  label:"\u041e\u0431\u0449\u0438\u0445 \u0432\u0441\u0442\u0440\u0435\u0447 \u0432 \u043c\u0435\u0441\u044f\u0446",            def:8,      suf:"\u0448\u0442."},
+      {k:"dur",   label:"\u0421\u0440\u0435\u0434\u043d\u044f\u044f \u0434\u043b\u0438\u0442\u0435\u043b\u044c\u043d\u043e\u0441\u0442\u044c \u0432\u0441\u0442\u0440\u0435\u0447\u0438",    def:60,     suf:"\u043c\u0438\u043d"},
+      {k:"part",  label:"\u0421\u0440\u0435\u0434\u043d\u0435\u0435 \u0447\u0438\u0441\u043b\u043e \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u043e\u0432",        def:6,      suf:"\u0447\u0435\u043b."},
+      {k:"psal",  label:"\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u043e\u043a\u043b\u0430\u0434 \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u0430",         def:100000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"asal",  label:"\u041e\u043a\u043b\u0430\u0434 \u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043d\u0442\u0430",               def:70000,  suf:"\u20bd/\u043c\u0435\u0441"},
+    ],
+    compute:v=>{
+      const cmP = costMinute(v.psal);
+      const cmA = costMinute(v.asal);
+      const A = v.meet * v.dur * 0.15 * v.part * cmP;          // \u043a\u043e\u0440\u043e\u0447\u0435 \u0432\u0441\u0442\u0440\u0435\u0447\u0438 \u043d\u0430 15%
+      const B = v.meet * v.dur * (v.part * 0.15) * cmP;        // \u043c\u0435\u043d\u044c\u0448\u0435 \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u043e\u0432 \u043d\u0430 15%
+      const C = v.meet * v.dur * cmA;                          // \u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043d\u0442 \u043e\u0441\u0432\u043e\u0431\u043e\u0436\u0434\u0430\u0435\u0442\u0441\u044f
+      return {fot:A+B+C, rev:0, breakdown:[
+        ["\u0410 \u00b7 \u043a\u043e\u0440\u043e\u0447\u0435 \u0432\u0441\u0442\u0440\u0435\u0447\u0438 \u043d\u0430 15%", A],
+        ["\u0411 \u00b7 \u043c\u0435\u043d\u044c\u0448\u0435 \u0443\u0447\u0430\u0441\u0442\u043d\u0438\u043a\u043e\u0432 \u043d\u0430 15%", B],
+        ["\u0412 \u00b7 \u043f\u0440\u043e\u0442\u043e\u043a\u043e\u043b \u0438 \u0432\u044b\u0432\u043e\u0434\u044b (\u0430\u0441\u0441\u0438\u0441\u0442\u0435\u043d\u0442)", C],
+      ]};
+    }
+  },
+  {
+    id:7,
+    title:"\u041e\u0431\u0449\u0435\u0435 \u043f\u043e\u0432\u044b\u0448\u0435\u043d\u0438\u0435 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438 (BitrixGPT \u0434\u043b\u044f \u0432\u0441\u0435\u0445)",
+    sub:"\u041b\u044e\u0431\u043e\u0439 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a \u0438\u0441\u043f\u043e\u043b\u044c\u0437\u0443\u0435\u0442 BitrixGPT \u0434\u043b\u044f \u043b\u0438\u0447\u043d\u043e\u0439 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438: \u043e\u0431\u0441\u0443\u0436\u0434\u0435\u043d\u0438\u044f, \u0438\u0434\u0435\u0438, \u0442\u0435\u043a\u0441\u0442\u044b, \u043e\u0431\u0440\u0430\u0442\u043d\u0430\u044f \u0441\u0432\u044f\u0437\u044c. \u0421\u0440\u0435\u0434\u043d\u044f\u044f \u043e\u0446\u0435\u043d\u043a\u0430 \u043f\u0440\u0438\u0440\u043e\u0441\u0442\u0430 \u2014 10%.",
+    link:"https://helpdesk.bitrix24.ru/open/18505482/",
+    role:"\u0412\u0441\u0435 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438 \u043d\u0430 \u043f\u043e\u0440\u0442\u0430\u043b\u0435", effect:["fot"],
+    fields:[
+      {k:"emp", label:"\u0412\u0441\u0435\u0433\u043e \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432 \u043d\u0430 \u043f\u043e\u0440\u0442\u0430\u043b\u0435", def:1,      suf:"\u0447\u0435\u043b."},
+      {k:"sal", label:"\u0421\u0440\u0435\u0434\u043d\u0438\u0439 \u043e\u043a\u043b\u0430\u0434 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0430",     def:100000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"eff", label:"\u041f\u0440\u0438\u0440\u043e\u0441\u0442 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438",        def:0.10,   suf:"\u0434\u043e\u043b\u044f"},
+    ],
+    compute:v=>{
+      const fot = v.sal * TAX * v.eff * v.emp;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:8,
+    title:"VibeCode",
+    sub:"\u0418\u043d\u0438\u0446\u0438\u0430\u0442\u0438\u0432\u043d\u044b\u0435 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438 (~10%) \u0441 \u043f\u043e\u043c\u043e\u0449\u044c\u044e VibeCode \u0430\u0432\u0442\u043e\u043c\u0430\u0442\u0438\u0437\u0438\u0440\u0443\u044e\u0442 \u0441\u0432\u043e\u044e \u0440\u0430\u0431\u043e\u0442\u0443 \u0438 \u043f\u0440\u043e\u0446\u0435\u0441\u0441\u044b \u0432 \u043e\u0442\u0434\u0435\u043b\u0435/\u043a\u043e\u043c\u043f\u0430\u043d\u0438\u0438. \u041a\u043e\u043d\u0441\u0435\u0440\u0432\u0430\u0442\u0438\u0432\u043d\u0430\u044f \u043e\u0446\u0435\u043d\u043a\u0430 \u043f\u043e\u0432\u044b\u0448\u0435\u043d\u0438\u044f \u0438\u0445 \u043b\u0438\u0447\u043d\u043e\u0439 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u0438 \u2013 30%.",
+    link:"https://helpdesk.bitrix24.ru/open/28505406/",
+    role:"\u0418\u043d\u0438\u0446\u0438\u0430\u0442\u0438\u0432\u043d\u044b\u0435 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0438", effect:["fot"], vibe:true,
+    fields:[
+      {k:"emp",   label:"\u0412\u0441\u0435\u0433\u043e \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432",                  def:10,     suf:"\u0447\u0435\u043b."},
+      {k:"share", label:"\u0414\u043e\u043b\u044f \u0438\u043d\u0438\u0446\u0438\u0430\u0442\u0438\u0432\u043d\u044b\u0445",                 def:0.10,   suf:"\u0434\u043e\u043b\u044f"},
+      {k:"sal",   label:"\u041e\u043a\u043b\u0430\u0434 \u0438\u043d\u0438\u0446\u0438\u0430\u0442\u0438\u0432\u043d\u043e\u0433\u043e \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u0430",    def:100000, suf:"\u20bd/\u043c\u0435\u0441"},
+      {k:"simp",  label:"\u0423\u043f\u0440\u043e\u0449\u0435\u043d\u0438\u0435 \u0440\u0430\u0431\u043e\u0442\u044b",                  def:0.30,   suf:"\u0434\u043e\u043b\u044f"},
+    ],
+    compute:v=>{
+      const initiative = Math.round(v.emp * v.share);   // \u043c\u0430\u0442\u0435\u043c. \u043e\u043a\u0440\u0443\u0433\u043b\u0435\u043d\u0438\u0435
+      const fot = v.sal * TAX * v.simp * initiative;
+      return {fot, rev:0, breakdown:[
+        ["\u0418\u043d\u0438\u0446\u0438\u0430\u0442\u0438\u0432\u043d\u044b\u0445 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432", initiative, "int"],
+      ]};
+    },
+    qualitative:"\u041f\u043e\u0441\u043b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0445 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432 \u0431\u0438\u0437\u043d\u0435\u0441-\u043f\u0440\u043e\u0446\u0435\u0441\u0441\u044b \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u0438 \u0432 \u0441\u0440\u0435\u0434\u043d\u0435\u043c \u0443\u0441\u043a\u043e\u0440\u044f\u044e\u0442\u0441\u044f \u0438 \u043f\u043e\u0432\u044b\u0448\u0430\u044e\u0442 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u044c \u043d\u0430 ~20%."
+  },
+];
+
+/* ---------- \u0424\u043e\u0440\u043c\u0430\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 \u0447\u0438\u0441\u0435\u043b ---------- */
+// \u0433\u0440\u0443\u043f\u043f\u0438\u0440\u043e\u0432\u043a\u0430 \u0440\u0430\u0437\u0440\u044f\u0434\u043e\u0432 \u0434\u043b\u044f \u0437\u043d\u0430\u0447\u0435\u043d\u0438\u044f \u043f\u043e\u043b\u044f \u0432\u0432\u043e\u0434\u0430 (\u0441\u043e\u0445\u0440\u0430\u043d\u044f\u0435\u0442 \u0434\u0440\u043e\u0431\u043d\u0443\u044e \u0447\u0430\u0441\u0442\u044c \u0438 \u0445\u0432\u043e\u0441\u0442\u043e\u0432\u0443\u044e \u0442\u043e\u0447\u043a\u0443 \u043f\u0440\u0438 \u043d\u0430\u0431\u043e\u0440\u0435)
+function groupFmt(s){
+  s = String(s).replace(/\s/g,'').replace(',','.').replace(/[^\d.]/g,'');
+  if(s==='') return '';
+  const parts = s.split('.');
+  let int = parts[0].replace(/^0+(?=\d)/,'');
+  if(int==='') int='0';
+  int = int.replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+  return parts.length>1 ? int+'.'+parts[1] : int;
+}
+function parseNum(s){
+  s = String(s).replace(/\s/g,'').replace(',','.').replace(/[^\d.]/g,'');
+  const n = parseFloat(s);
+  return isNaN(n) || n<0 ? 0 : n;
+}
+// \u0444\u043e\u0440\u043c\u0430\u0442\u0438\u0440\u043e\u0432\u0430\u043d\u0438\u0435 \u0441 \u0441\u043e\u0445\u0440\u0430\u043d\u0435\u043d\u0438\u0435\u043c \u043f\u043e\u0437\u0438\u0446\u0438\u0438 \u043a\u0443\u0440\u0441\u043e\u0440\u0430
+function onNumInput(inp){
+  const old = inp.value;
+  const sel = inp.selectionStart;
+  const digitsBefore = old.slice(0,sel).replace(/[^\d]/g,'').length;
+  const formatted = groupFmt(old);
+  inp.value = formatted;
+  let count=0, pos=0;
+  if(digitsBefore>0){
+    for(; pos<formatted.length; pos++){
+      if(/\d/.test(formatted[pos])) count++;
+      if(count>=digitsBefore){ pos++; break; }
+    }
+  }
+  inp.setSelectionRange(pos,pos);
+  return parseNum(formatted);
+}
+
+const fmtMoney = n => Math.round(n).toLocaleString("ru-RU") + " \u20bd";
+const fmtInt   = n => Math.round(n).toLocaleString("ru-RU");
+const state = {}; // state[id] = {selected, values}
+
+const ICON_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+/* ---------- \u0420\u0435\u043d\u0434\u0435\u0440 \u043a\u0430\u0440\u0442\u043e\u0447\u0435\u043a ---------- */
+const root = document.getElementById("scenarios");
+
+// \u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440 \u0434\u043b\u044f \u0433\u0440\u0443\u043f\u043f\u044b CRM (\u043f\u0435\u0440\u0432\u044b\u0435 4 \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u044f)
+const crmGroup = document.createElement("div");
+crmGroup.className = "group-crm";
+crmGroup.id = "sec-crm";
+crmGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 4v5"/></svg>'
+  + '<span>\u0421\u0446\u0435\u043d\u0430\u0440\u0438\u0438 \u0432 CRM</span></div>';
+root.appendChild(crmGroup);
+
+// \u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440 \u0434\u043b\u044f \u0433\u0440\u0443\u043f\u043f\u044b \u0418\u0418-\u0430\u0433\u0435\u043d\u0442\u043e\u0432
+const agentsGroup = document.createElement("div");
+agentsGroup.className = "group-agents";
+agentsGroup.id = "sec-agents";
+agentsGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><path d="M9 13h.01M15 13h.01"/><path d="M2 14v2M22 14v2"/></svg>'
+  + '<span>\u0418\u0418-\u0430\u0433\u0435\u043d\u0442\u044b</span></div>';
+root.appendChild(agentsGroup);
+
+// \u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440 \u0434\u043b\u044f \u043f\u0440\u043e\u0447\u0438\u0445 \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0435\u0432
+const otherGroup = document.createElement("div");
+otherGroup.className = "group-other";
+otherGroup.id = "sec-other";
+otherGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'
+  + '<span>\u0414\u0440\u0443\u0433\u0438\u0435 \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0438</span></div>';
+root.appendChild(otherGroup);
+
+// \u043a\u043e\u043d\u0442\u0435\u0439\u043d\u0435\u0440 \u0434\u043b\u044f \u0433\u0440\u0443\u043f\u043f\u044b VibeCode
+const vibeGroup = document.createElement("div");
+vibeGroup.className = "group-vibe";
+vibeGroup.id = "sec-vibe";
+vibeGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>'
+  + '<span>VibeCode</span></div>';
+root.appendChild(vibeGroup);
+
+scenarios.forEach((sc, idx)=>{
+  const num = idx + 1;
+  state[sc.id] = {selected:false, values:{}};
+  sc.fields.forEach(f=> state[sc.id].values[f.k] = f.def);
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.id = "card-"+sc.id;
+
+  const tags = sc.effect.map(e=> e==="fot"
+    ? '<span class="tag fot">\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u044f \u0424\u041e\u0422</span>'
+    : '<span class="tag rev">\u041f\u0440\u0438\u0440\u043e\u0441\u0442 \u0432\u044b\u0440\u0443\u0447\u043a\u0438</span>').join("")
+    + `<span class="tag role">${sc.role}</span>`;
+
+  const more = sc.link
+    ? `<a class="more" href="${sc.link}" target="_blank" rel="noopener noreferrer">${ICON_INFO}\u041f\u043e\u0434\u0440\u043e\u0431\u043d\u0435\u0435</a>`
+    : "";
+
+  const fieldsHtml = sc.fields.map(f=>`
+      <div class="field ${f.locked?'locked':''}" data-field="${f.k}">
+        <label>${f.label}</label>
+        <div class="in">
+          <input type="text" inputmode="decimal" class="num-in"
+                 value="${groupFmt(String(f.def))}" data-k="${f.k}" ${f.locked?'disabled':''}>
+          <span class="suf">${f.suf}</span>
+        </div>
+        <div class="err"></div>
+      </div>`).join("");
+
+  card.innerHTML = `
+    <div class="card-head">
+      <input type="checkbox" class="chk" data-id="${sc.id}">
+      <div class="card-title">
+        <div class="t">${num}. ${sc.title}</div>
+        <div class="s">${sc.sub}</div>
+        ${more}
+        <div class="tags">${tags}</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="fields">${fieldsHtml}</div>
+      <div class="result" id="res-${sc.id}"></div>
+      ${sc.note?`<div class="note">${sc.note}</div>`:''}
+      ${sc.qualitative?`<div class="note">${sc.qualitative}</div>`:''}
+    </div>`;
+
+  (sc.crm ? crmGroup : sc.agents ? agentsGroup : sc.vibe ? vibeGroup : otherGroup).appendChild(card);
+
+  // toggle (\u043a\u043b\u0438\u043a \u043f\u043e \u0441\u0441\u044b\u043b\u043a\u0435 "\u041f\u043e\u0434\u0440\u043e\u0431\u043d\u0435\u0435" \u043d\u0435 \u043f\u0435\u0440\u0435\u043a\u043b\u044e\u0447\u0430\u0435\u0442 \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0439)
+  const chk = card.querySelector(".chk");
+  card.querySelector(".card-head").addEventListener("click", e=>{
+    if(e.target.closest(".more")) return;
+    if(e.target!==chk){ chk.checked = !chk.checked; }
+    state[sc.id].selected = chk.checked;
+    card.classList.toggle("active", chk.checked);
+    recompute();
+  });
+
+  // \u0432\u0432\u043e\u0434 \u0447\u0438\u0441\u0435\u043b \u0441 \u0440\u0430\u0437\u0434\u0435\u043b\u0438\u0442\u0435\u043b\u044f\u043c\u0438 \u0440\u0430\u0437\u0440\u044f\u0434\u043e\u0432
+  card.querySelectorAll(".num-in:not([disabled])").forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      state[sc.id].values[inp.dataset.k] = onNumInput(inp);
+      recompute();
+    });
+  });
+});
+
+/* ---------- \u041d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u044f (\u043f\u043b\u0430\u0432\u043d\u044b\u0439 \u0441\u043a\u0440\u043e\u043b\u043b \u043f\u043e \u0447\u0438\u043f\u0441\u0430\u043c) ---------- */
+document.querySelectorAll(".navbar .chip").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const el = document.getElementById(btn.dataset.go);
+    if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+  });
+});
+
+function plural(n, forms){ // forms = [\u043e\u0434\u0438\u043d, \u0434\u0432\u0430, \u043f\u044f\u0442\u044c]
+  const n10 = n % 10, n100 = n % 100;
+  if(n10===1 && n100!==11) return forms[0];
+  if(n10>=2 && n10<=4 && (n100<10 || n100>=20)) return forms[1];
+  return forms[2];
+}
+
+/* ---------- \u041f\u0435\u0440\u0435\u0441\u0447\u0451\u0442 ---------- */
+function recompute(){
+  let totalFot=0, totalRev=0, anySelected=false, showQual=false, selectedCount=0;
+
+  scenarios.forEach(sc=>{
+    const st = state[sc.id];
+    const card = document.getElementById("card-"+sc.id);
+    const resEl = document.getElementById("res-"+sc.id);
+
+    // \u0441\u0431\u0440\u043e\u0441 \u043e\u0448\u0438\u0431\u043e\u043a
+    card.querySelectorAll(".field").forEach(f=>f.classList.remove("invalid"));
+    const errors = sc.validate ? sc.validate(st.values) : null;
+    if(errors){
+      Object.entries(errors).forEach(([k,msg])=>{
+        const f = card.querySelector(`.field[data-field="${k}"]`);
+        if(f){ f.classList.add("invalid"); f.querySelector(".err").textContent = msg; }
+      });
+    }
+
+    if(!st.selected){ resEl.innerHTML=""; return; }
+    anySelected = true;
+    selectedCount++;
+    if(sc.qualitative) showQual = true;
+
+    const r = sc.compute(st.values);
+    const fotY = r.fot*12, revY = r.rev*12;
+    totalFot += r.fot; totalRev += r.rev;
+
+    let rows = "";
+    if(r.breakdown){
+      rows += '<div class="breakdown">' + r.breakdown.map(b=>{
+        const isInt = b[2]==="int";
+        return `<div>${b[0]}: <b>${isInt?fmtInt(b[1]):fmtMoney(b[1])}${isInt?'':' /\u043c\u0435\u0441'}</b></div>`;
+      }).join("") + '</div>';
+    }
+    if(sc.effect.includes("fot")){
+      rows += row("\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u044f \u0424\u041e\u0422, \u043c\u0435\u0441\u044f\u0446", fmtMoney(r.fot));
+      rows += row("\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u044f \u0424\u041e\u0422, \u0433\u043e\u0434", fmtMoney(fotY));
+    }
+    if(sc.effect.includes("rev")){
+      rows += row("\u041f\u0440\u0438\u0440\u043e\u0441\u0442 \u0432\u044b\u0440\u0443\u0447\u043a\u0438, \u043c\u0435\u0441\u044f\u0446", fmtMoney(r.rev), "rev");
+      rows += row("\u041f\u0440\u0438\u0440\u043e\u0441\u0442 \u0432\u044b\u0440\u0443\u0447\u043a\u0438, \u0433\u043e\u0434", fmtMoney(revY), "rev");
+    }
+    const totMonth = r.fot + r.rev;
+    if(sc.effect.length>1){
+      rows += `<div class="res-row total"><span class="lbl">\u0418\u0442\u043e\u0433\u043e \u043f\u043e \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u044e, \u043c\u0435\u0441\u044f\u0446</span><span class="val">${fmtMoney(totMonth)}</span></div>`;
+      rows += `<div class="res-row total"><span class="lbl">\u0418\u0442\u043e\u0433\u043e \u043f\u043e \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u044e, \u0433\u043e\u0434</span><span class="val">${fmtMoney(totMonth*12)}</span></div>`;
+    }
+    resEl.innerHTML = rows;
+  });
+
+  renderSummary(totalFot, totalRev, anySelected, showQual);
+
+  // \u043e\u0431\u043d\u043e\u0432\u043b\u0435\u043d\u0438\u0435 \u043f\u0430\u043d\u0435\u043b\u0438 \u043d\u0430\u0432\u0438\u0433\u0430\u0446\u0438\u0438
+  const cntEl = document.getElementById("nav-count");
+  const totEl = document.getElementById("nav-total");
+  if(selectedCount){
+    cntEl.textContent = "\u0412\u044b\u0431\u0440\u0430\u043d\u043e: " + selectedCount + " " + plural(selectedCount, ["\u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0439","\u0441\u0446\u0435\u043d\u0430\u0440\u0438\u044f","\u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0435\u0432"]);
+    totEl.innerHTML = "\u042d\u0444\u0444\u0435\u043a\u0442: <b>" + fmtMoney(totalFot + totalRev) + "/\u043c\u0435\u0441</b>";
+  } else {
+    cntEl.textContent = "\u041d\u0438\u0447\u0435\u0433\u043e \u043d\u0435 \u0432\u044b\u0431\u0440\u0430\u043d\u043e";
+    totEl.innerHTML = "";
+  }
+}
+
+function row(lbl,val,cls){
+  return `<div class="res-row"><span class="lbl">${lbl}</span><span class="val ${cls||''}">${val}</span></div>`;
+}
+
+/* ---------- \u0418\u0442\u043e\u0433\u043e\u0432\u044b\u0439 \u0431\u043b\u043e\u043a ---------- */
+function renderSummary(fot, rev, any, qual){
+  const el = document.getElementById("summary-body");
+  if(!any){
+    el.innerHTML = '<div class="empty">\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0445\u043e\u0442\u044f \u0431\u044b \u043e\u0434\u0438\u043d \u0441\u0446\u0435\u043d\u0430\u0440\u0438\u0439, \u0447\u0442\u043e\u0431\u044b \u0443\u0432\u0438\u0434\u0435\u0442\u044c \u0441\u043e\u0432\u043e\u043a\u0443\u043f\u043d\u044b\u0439 \u044d\u0444\u0444\u0435\u043a\u0442.</div>';
+    return;
+  }
+  const grand = fot + rev;
+  const grandYear = grand*12;
+  const ratio = grandYear / COST_YEAR;
+  const ratioTxt = ratio>=10 ? Math.round(ratio).toLocaleString("ru-RU")
+                             : ratio.toFixed(1).replace(".",",");
+  el.innerHTML = `
+    <div class="sum-grid">
+      <div class="h"></div><div class="h">\u041c\u0435\u0441\u044f\u0446</div><div class="h year">\u0413\u043e\u0434</div>
+      <div class="lbl">\u0421\u0443\u043c\u043c\u0430\u0440\u043d\u0430\u044f \u044d\u043a\u043e\u043d\u043e\u043c\u0438\u044f \u0424\u041e\u0422</div>
+      <div class="num">${fmtMoney(fot)}</div>
+      <div class="num year">${fmtMoney(fot*12)}</div>
+      <div class="lbl">\u0421\u0443\u043c\u043c\u0430\u0440\u043d\u044b\u0439 \u043f\u0440\u0438\u0440\u043e\u0441\u0442 \u0432\u044b\u0440\u0443\u0447\u043a\u0438</div>
+      <div class="num">${fmtMoney(rev)}</div>
+      <div class="num year">${fmtMoney(rev*12)}</div>
+      <div class="sum-line"></div>
+      <div class="lbl row-total">\u041e\u0431\u0449\u0438\u0439 \u044d\u0444\u0444\u0435\u043a\u0442 BitrixGPT</div>
+      <div class="num grand eco">${fmtMoney(grand)}</div>
+      <div class="num grand eco year">${fmtMoney(grandYear)}</div>
+      <div class="lbl cost">\u0421\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u044c BitrixGPT</div>
+      <div class="num cost">\u043e\u0442 ${fmtMoney(COST_YEAR/12)}</div>
+      <div class="num cost year">\u043e\u0442 ${fmtMoney(COST_YEAR)}</div>
+      ${grand>0?`<div class="verdict">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>\u042d\u043a\u043e\u043d\u043e\u043c\u0438\u044f \u0437\u0430 \u0433\u043e\u0434 \u0432\u044b\u0433\u043e\u0434\u043d\u0435\u0435 \u0441\u0442\u043e\u0438\u043c\u043e\u0441\u0442\u0438 BitrixGPT \u0432 <b>${ratioTxt}\u00d7</b></span>
+      </div>`:''}
+    </div>
+    ${qual?`<div class="qual">\u041f\u043e\u0441\u043b\u0435 \u0440\u0430\u0431\u043e\u0442\u044b \u0430\u043a\u0442\u0438\u0432\u043d\u044b\u0445 \u0441\u043e\u0442\u0440\u0443\u0434\u043d\u0438\u043a\u043e\u0432 \u0431\u0438\u0437\u043d\u0435\u0441-\u043f\u0440\u043e\u0446\u0435\u0441\u0441\u044b \u043a\u043e\u043c\u043f\u0430\u043d\u0438\u0438 \u0432 \u0441\u0440\u0435\u0434\u043d\u0435\u043c \u0443\u0441\u043a\u043e\u0440\u044f\u044e\u0442\u0441\u044f \u0438 \u043f\u043e\u0432\u044b\u0448\u0430\u044e\u0442 \u044d\u0444\u0444\u0435\u043a\u0442\u0438\u0432\u043d\u043e\u0441\u0442\u044c \u043d\u0430 ~20%.</div>`:''}
+  `;
+}
+
+recompute();
+</script>
+</body>
+</html>
