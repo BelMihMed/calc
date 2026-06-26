@@ -212,6 +212,21 @@
   .btn-secondary{background:#eef2f7;color:#5a6b82;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
   .btn-secondary:hover{background:#e2e8f1}
 
+  /* иконка «как считается» + всплывающее пояснение */
+  .info-btn{background:none;border:0;cursor:pointer;color:var(--b24-muted);padding:2px;
+    display:inline-flex;align-items:center;border-radius:6px;transition:.15s;vertical-align:middle}
+  .info-btn:hover{color:var(--b24-blue);background:var(--b24-soft-blue)}
+  .info-btn svg{width:17px;height:17px}
+  .res-head{display:flex;justify-content:flex-end;margin:-2px 0 4px}
+  .summary h2{display:flex;align-items:center;gap:8px}
+  .summary h2 .info-btn{color:rgba(255,255,255,.85)}
+  .summary h2 .info-btn:hover{color:#fff;background:rgba(255,255,255,.15)}
+  .modal-overlay .modal{position:relative}
+  .modal-x{position:absolute;top:12px;right:14px;background:none;border:0;font-size:24px;
+    line-height:1;color:var(--b24-muted);cursor:pointer;padding:0 4px}
+  .modal-x:hover{color:var(--b24-text)}
+  .modal .info-text{font-size:14.5px;color:var(--b24-text);line-height:1.6;margin:6px 0 0}
+
   .foot{text-align:center;color:var(--b24-muted);font-size:12.5px;margin-top:22px}
   @media(max-width:560px){
     .head{padding:20px}
@@ -246,7 +261,7 @@
   <div id="scenarios"></div>
 
   <div class="summary" id="sec-summary">
-    <h2>Общий эффект BitrixGPT</h2>
+    <h2>Общий эффект BitrixGPT <button class="info-btn" data-info="summary" aria-label="Как считается общий эффект"></button></h2>
     <div id="summary-body"></div>
     <button class="dl-btn" id="dl-btn" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -285,7 +300,7 @@ const scenarios = [
       {k:"calls", label:"Звонков в день на менеджера",      def:20,       suf:"шт."},
       {k:"time",  label:"Время обработки одного звонка",    def:10,       suf:"мин"},
       {k:"plan",  label:"План менеджера",                   def:1000000,  suf:"₽/мес"},
-      {k:"coef",  label:"Коэффициент реализации прироста",  def:0.3,      suf:"доля"},
+      {k:"coef",  label:"Доля эффективно потраченного сэкономленного времени", def:0.3, suf:"доля"},
     ],
     compute:v=>{
       const savedMinDay = v.calls * v.time;
@@ -305,7 +320,7 @@ const scenarios = [
     fields:[
       {k:"rop",   label:"Количество РОПов",               def:1,      suf:"чел."},
       {k:"sal",   label:"Оклад РОПа (на руки)",           def:200000, suf:"₽/мес"},
-      {k:"share", label:"Доля времени на оценку скриптов", def:0.10,  suf:"доля"},
+      {k:"share", label:"Процент времени РОПа на проверку звонков", def:0.10,  suf:"доля"},
     ],
     compute:v=>{
       const fullCost = v.sal * TAX;
@@ -330,38 +345,17 @@ const scenarios = [
     }
   },
   {
-    id:3,
-    title:"Генерация коммерческих предложений и писем",
-    sub:"BitrixGPT пишет КП и письма клиентам вместо ручного составления менеджером.",
-    role:"Менеджер по продажам", effect:["fot","rev"], crm:true,
-    fields:[
-      {k:"mgr",  label:"Количество менеджеров",            def:1,       suf:"чел."},
-      {k:"sal",  label:"Оклад менеджера (на руки)",        def:100000,  suf:"₽/мес"},
-      {k:"docs", label:"Документов/писем в день",          def:5,       suf:"шт."},
-      {k:"time", label:"Время на один документ",           def:20,      suf:"мин"},
-      {k:"plan", label:"План менеджера",                   def:1000000, suf:"₽/мес"},
-      {k:"coef", label:"Коэффициент реализации прироста",  def:0.3,     suf:"доля"},
-    ],
-    compute:v=>{
-      const savedMinDay = v.docs * v.time;
-      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
-      const fot = savedHoursMonth * costHour(v.sal) * v.mgr;
-      const freedShare = (savedMinDay / 60) / DAY_HOURS;
-      const rev = freedShare * v.plan * v.coef * v.mgr;
-      return {fot, rev};
-    }
-  },
-  {
     id:9,
-    title:"Агент для CRM",
-    sub:"Менеджер управляет CRM голосом или текстом через ИИ-агента: поиск лидов и сделок, создание и конвертация записей, проверка дублей, смена стадий/ответственных, товарные позиции, аналитика по воронкам — вместо ручных кликов.",
-    role:"Менеджер по продажам", effect:["fot"], agents:true,
-    note:"Учитываются рутинные операции в CRM (поиск, создание, конвертация, дубли, смена стадий, товарные позиции, аналитика). Не включает заполнение карточки после звонков — это сценарий «Расшифровка звонков», чтобы не считать одно и то же время дважды.",
+    title:"Голосовое управление Битрикс24",
+    sub:"Сотрудник управляет Битрикс24 голосом или текстом через ИИ-агента: сделки и лиды, задачи, бизнес-процессы, файлы и документы, смена стадий, аналитика — вместо ручных кликов и переходов по меню.",
+    link:"golos-bitrix24.html",
+    role:"Сотрудники", effect:["fot"], agents:true,
+    note:"Учитываются рутинные операции в Битрикс24 (сделки, задачи, процессы, файлы, поиск, создание, смена стадий, аналитика). Не включает заполнение карточки после звонков — это сценарий «Расшифровка звонков», чтобы не считать одно и то же время дважды.",
     fields:[
-      {k:"mgr",  label:"Количество менеджеров",                def:1,      suf:"чел."},
-      {k:"sal",  label:"Оклад менеджера (на руки)",            def:100000, suf:"₽/мес"},
-      {k:"ops",  label:"Операций в CRM в день на менеджера",   def:30,     suf:"шт."},
-      {k:"time", label:"Экономия времени на операцию",         def:3,      suf:"мин"},
+      {k:"mgr",  label:"Количество сотрудников",                def:1,      suf:"чел."},
+      {k:"sal",  label:"Средний оклад сотрудника",              def:100000, suf:"₽/мес"},
+      {k:"ops",  label:"Операций в Битрикс24 в день",           def:30,     suf:"шт."},
+      {k:"time", label:"Экономия времени на операцию",          def:3,      suf:"мин"},
     ],
     compute:v=>{
       const savedMinDay = v.ops * v.time;
@@ -372,8 +366,9 @@ const scenarios = [
   },
   {
     id:2,
-    title:"Агент общения с клиентами",
+    title:"Агент первой линии поддержки",
     sub:"BitrixGPT обрабатывает входящие обращения клиентов. Часть закрывает сам, остальные уходят оператору.",
+    link:"podderzhka-bitrix24.html",
     role:"Специалист поддержки", effect:["fot"], agents:true,
     fields:[
       {k:"spec", label:"Количество специалистов поддержки", def:1,     suf:"чел."},
@@ -407,6 +402,72 @@ const scenarios = [
     ],
     compute:v=>{
       const savedMinDay = v.q * v.t * v.share;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.emp;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:11,
+    title:"Личный ассистент",
+    sub:"ИИ-агент утром формирует план дня по задачам и календарю, вечером собирает итог. Руководителям сводит десятки ежедневных отчётов команды в один one-pager.",
+    link:"assistant-bitrix24.html",
+    role:"Все сотрудники + руководители", effect:["fot"], agents:true,
+    note:"Считаются план дня/итог у сотрудников и сводный отчёт у руководителей (это разные затраты времени, не пересекаются). Не дублируйте со сценарием «BitrixGPT для всех» (+10%).",
+    fields:[
+      {k:"emp",    label:"Всего сотрудников",                     def:50,     suf:"чел."},
+      {k:"empSal", label:"Средний оклад сотрудника",              def:100000, suf:"₽/мес"},
+      {k:"empMin", label:"Экономия времени сотрудника в день",    def:20,     suf:"мин"},
+      {k:"mgr",    label:"Количество руководителей",              def:5,      suf:"чел."},
+      {k:"mgrSal", label:"Оклад руководителя",                    def:200000, suf:"₽/мес"},
+      {k:"mgrMin", label:"Экономия времени руководителя в день",  def:30,     suf:"мин"},
+    ],
+    compute:v=>{
+      const A = v.empMin * DAYS_MONTH / 60 * costHour(v.empSal) * v.emp;
+      const B = v.mgrMin * DAYS_MONTH / 60 * costHour(v.mgrSal) * v.mgr;
+      return {fot:A+B, rev:0, breakdown:[
+        ["Сотрудники · план дня и итог", A],
+        ["Руководители · сводный отчёт", B],
+      ]};
+    }
+  },
+  {
+    id:12,
+    title:"Агент онлайн-записи",
+    sub:"Голосовой ИИ-агент сам обзванивает клиентов по онлайн-записи: подтверждает визит, напоминает, реагирует на опоздание и сохраняет исход в карточке — вместо ручного обзвона администратором.",
+    link:"zapis-bitrix24.html",
+    role:"Администратор / ресепшн", effect:["fot","rev"], agents:true,
+    note:"Прирост выручки считается только по возвращённым неявкам — консервативно, без накрутки.",
+    fields:[
+      {k:"visits",  label:"Записей (визитов) в месяц",  def:800,   suf:"шт."},
+      {k:"perRec",  label:"Звонков на одну запись",     def:2,     suf:"шт."},
+      {k:"time",    label:"Время на звонок вручную",    def:3,     suf:"мин"},
+      {k:"admSal",  label:"Оклад администратора",       def:60000, suf:"₽/мес"},
+      {k:"check",   label:"Средний чек визита",         def:2000,  suf:"₽"},
+      {k:"noShow",  label:"Доля неявок сейчас",         def:0.20,  suf:"доля"},
+      {k:"recover", label:"Доля возвращённых неявок",   def:0.30,  suf:"доля"},
+    ],
+    compute:v=>{
+      const savedHoursMonth = v.visits * v.perRec * v.time / 60;
+      const fot = savedHoursMonth * costHour(v.admSal);
+      const rev = v.visits * v.noShow * v.recover * v.check;
+      return {fot, rev};
+    }
+  },
+  {
+    id:3,
+    title:"Генерация документов",
+    sub:"BitrixGPT создаёт документы по шаблонам и пишет тексты вместо ручного составления: КП, договоры, письма, инструкции, отчёты. КП — лишь один из примеров.",
+    link:"documents-bitrix24.html",
+    role:"Любой сотрудник", effect:["fot"],
+    fields:[
+      {k:"emp",  label:"Сотрудников, готовящих документы", def:5,      suf:"чел."},
+      {k:"sal",  label:"Средний оклад сотрудника",         def:100000, suf:"₽/мес"},
+      {k:"docs", label:"Документов/писем в день",          def:5,      suf:"шт."},
+      {k:"time", label:"Время на один документ",           def:20,     suf:"мин"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.docs * v.time;
       const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
       const fot = savedHoursMonth * costHour(v.sal) * v.emp;
       return {fot, rev:0};
@@ -574,16 +635,21 @@ scenarios.forEach((sc, idx)=>{
     ? `<a class="more" href="${sc.link}" target="_blank" rel="noopener noreferrer">${ICON_INFO}Подробнее</a>`
     : "";
 
-  const fieldsHtml = sc.fields.map(f=>`
+  const fieldsHtml = sc.fields.map(f=>{
+    const isPct = f.suf==="доля";                       // доли вводим как проценты
+    const dispDef = isPct ? Math.round(f.def*1000)/10 : f.def;
+    const suf = isPct ? "%" : f.suf;
+    return `
       <div class="field ${f.locked?'locked':''}" data-field="${f.k}">
         <label>${f.label}</label>
         <div class="in">
           <input type="text" inputmode="decimal" class="num-in"
-                 value="${groupFmt(String(f.def))}" data-k="${f.k}" ${f.locked?'disabled':''}>
-          <span class="suf">${f.suf}</span>
+                 value="${groupFmt(String(dispDef))}" data-k="${f.k}"${isPct?' data-pct="1"':''} ${f.locked?'disabled':''}>
+          <span class="suf">${suf}</span>
         </div>
         <div class="err"></div>
-      </div>`).join("");
+      </div>`;
+  }).join("");
 
   card.innerHTML = `
     <div class="card-head">
@@ -617,7 +683,8 @@ scenarios.forEach((sc, idx)=>{
   // ввод чисел с разделителями разрядов
   card.querySelectorAll(".num-in:not([disabled])").forEach(inp=>{
     inp.addEventListener("input", ()=>{
-      state[sc.id].values[inp.dataset.k] = onNumInput(inp);
+      const n = onNumInput(inp);
+      state[sc.id].values[inp.dataset.k] = inp.dataset.pct ? n/100 : n;  // % -> доля
       recompute();
     });
   });
@@ -666,7 +733,7 @@ function recompute(){
     const fotY = r.fot*12, revY = r.rev*12;
     totalFot += r.fot; totalRev += r.rev;
 
-    let rows = "";
+    let rows = `<div class="res-head"><button class="info-btn" data-info="${sc.id}" aria-label="Как считается экономия">${ICON_INFO}</button></div>`;
     if(r.breakdown){
       rows += '<div class="breakdown">' + r.breakdown.map(b=>{
         const isInt = b[2]==="int";
@@ -896,6 +963,57 @@ document.getElementById("modal-ok").addEventListener("click", ()=>{
   modal.hidden = true;
   openReport(TARIFFS.find(t=>t.id===id), company);
 });
+
+/* ---------- Пояснения «как считается» (всплывающее окно) ---------- */
+const INFO = {
+  1:"Сколько минут в день уходило на прослушивание звонков и заполнение карточек (звонков × минут), переводим в часы за месяц (× 22 рабочих дня) и умножаем на стоимость часа работы менеджера. Часть высвобожденного времени превращается в дополнительные продажи (доля × план).",
+  4:"Берём полную стоимость РОПа в месяц (оклад × 1,4) и умножаем на процент его времени, который раньше уходил на ручную проверку звонков. Эту работу берёт на себя ИИ.",
+  5:"Это дополнительная выручка, а не экономия: размер базы клиентов × конверсию в повторную продажу × средний чек сделки.",
+  3:"Сколько минут в день уходит на подготовку документов (документов × минут), переводим в часы за месяц и умножаем на стоимость часа работы. Итог — по всем сотрудникам, которые готовят документы.",
+  9:"Сколько рутинных операций в Битрикс24 сотрудник делает за день и сколько минут экономит на каждой. Переводим в часы за месяц и умножаем на стоимость часа. Итог — по всем сотрудникам.",
+  2:"Сколько обращений в день закрывает ИИ вместо специалиста и сколько минут уходило на одно обращение. Переводим в часы за месяц и умножаем на стоимость часа специалиста.",
+  10:"Сколько раз в день сотрудники ищут ответы и сколько минут на это уходило. Учитываем процент вопросов, на которые отвечает ИИ. Переводим в часы за месяц и умножаем на стоимость часа. Итог — по всем сотрудникам.",
+  11:"Сотрудники экономят время на планировании и сборе итога дня, руководители — на чтении отчётов. Минуты в день переводим в часы за месяц и умножаем на стоимость часа. Складываем эффект сотрудников и руководителей.",
+  12:"Экономия ФОТ: число обзвонов в месяц (записей × звонков на запись) × минуты на звонок, в часах × стоимость часа администратора. Плюс выручка от возвращённых неявок: записей × процент неявок × процент возвращённых × средний чек.",
+  6:"Транскрибация встреч даёт три эффекта: встречи короче на 15%, участников меньше на 15% и ассистент не тратит время на протокол. Каждый эффект — это минуты × число встреч × стоимость минуты; всё суммируется.",
+  7:"Полная стоимость сотрудника в месяц (оклад × 1,4) × процент прироста эффективности × число сотрудников.",
+  8:"Берём процент инициативных сотрудников от общего числа, умножаем на полную стоимость сотрудника (оклад × 1,4) и на процент упрощения их работы.",
+};
+const SUMMARY_INFO = "Складываем экономию ФОТ по всем выбранным сценариям и отдельно — прирост выручки. Их сумма — общий эффект. Годовые суммы = месячные × 12. Ниже сравниваем эффект за год со стоимостью подписки BitrixGPT. Стоимость часа работы = оклад на руки × 1,4 ÷ 176 рабочих часов.";
+
+const infoModal = document.createElement("div");
+infoModal.className = "modal-overlay"; infoModal.hidden = true;
+infoModal.innerHTML = "<div class='modal'>"
+  + "<button class='modal-x' id='info-x' aria-label='Закрыть'>×</button>"
+  + "<h3 id='info-title'>Как считается</h3>"
+  + "<p class='info-text' id='info-text'></p>"
+  + "<div class='modal-actions'><button class='btn-primary' id='info-ok'>Понятно</button></div>"
+  + "</div>";
+document.querySelector(".wrap").appendChild(infoModal);
+
+function openInfo(key){
+  const t = document.getElementById("info-title");
+  const x = document.getElementById("info-text");
+  if(key==="summary"){
+    t.textContent = "Как считается общий эффект";
+    x.textContent = SUMMARY_INFO;
+  } else {
+    const sc = scenarios.find(s=>String(s.id)===String(key));
+    t.textContent = sc ? "Как считается: " + sc.title : "Как считается";
+    x.textContent = INFO[key] || "";
+  }
+  infoModal.hidden = false;
+}
+function closeInfo(){ infoModal.hidden = true; }
+document.getElementById("info-x").addEventListener("click", closeInfo);
+document.getElementById("info-ok").addEventListener("click", closeInfo);
+infoModal.addEventListener("click", e=>{ if(e.target===infoModal) closeInfo(); });
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".info-btn");
+  if(b) openInfo(b.dataset.info);
+});
+// иконка в статичные кнопки-«i» (итоговый блок)
+document.querySelectorAll(".info-btn:empty").forEach(b=> b.innerHTML = ICON_INFO);
 
 recompute();
 </script>
