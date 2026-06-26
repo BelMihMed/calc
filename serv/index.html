@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор экономии от внедрения BitrixGPT</title>
+<style>
+  :root{
+    --b24-blue:#2067b0;
+    --b24-blue-dark:#15518f;
+    --b24-cyan:#15a9e1;
+    --b24-bg:#eef2f7;
+    --b24-card:#ffffff;
+    --b24-text:#1c2a3a;
+    --b24-muted:#7a8aa0;
+    --b24-line:#e3e9f1;
+    --b24-green:#1fa463;
+    --b24-soft-blue:#eaf3fc;
+    --b24-soft-green:#e8f6ef;
+    --radius:14px;
+    --shadow:0 2px 14px rgba(32,103,176,.08);
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--b24-bg);
+    color:var(--b24-text);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+  .head{
+    background:linear-gradient(135deg,var(--b24-blue),var(--b24-cyan));
+    color:#fff;border-radius:var(--radius);padding:26px 28px;margin-bottom:22px;
+    box-shadow:var(--shadow);
+  }
+  .head h1{margin:0 0 6px;font-size:24px;font-weight:700}
+  .head p{margin:0;opacity:.92;font-size:14.5px;max-width:680px}
+  .hint{
+    background:var(--b24-soft-blue);border:1px solid #d4e6f8;color:#225b8f;
+    border-radius:10px;padding:12px 16px;font-size:14px;margin-bottom:22px;
+  }
+
+  /* группа CRM */
+  .group-crm{
+    background:linear-gradient(180deg,#eef6fd,#f7fafd);
+    border:1.5px solid #d4e6f8;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-label{
+    display:flex;align-items:center;gap:9px;font-size:12.5px;font-weight:700;
+    color:var(--b24-blue);text-transform:uppercase;letter-spacing:.7px;margin:4px 4px 12px;
+  }
+  .group-label svg{width:18px;height:18px}
+  .group-crm .card{box-shadow:0 1px 6px rgba(32,103,176,.06)}
+
+  /* группа ИИ-агенты */
+  .group-agents{
+    background:linear-gradient(180deg,#f1ecfd,#f8f6fe);
+    border:1.5px solid #ddd0f5;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-agents .group-label{color:#6b3fd4}
+  .group-agents .card{box-shadow:0 1px 6px rgba(108,63,209,.07)}
+  .group-agents .card.active{border-color:#6b3fd4}
+
+  /* группа «Другие сценарии» */
+  .group-other{
+    background:linear-gradient(180deg,#f3f5f8,#f9fbfc);
+    border:1.5px solid #e3e9f1;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-other .group-label{color:#5a6b82}
+  .group-other .card{box-shadow:0 1px 6px rgba(70,90,120,.06)}
+
+  /* группа VibeCode */
+  .group-vibe{
+    background:linear-gradient(180deg,#fff3ec,#fffaf6);
+    border:1.5px solid #f6d9c4;border-radius:18px;padding:14px;margin-bottom:16px;
+  }
+  .group-vibe .group-label{color:#c2651f}
+  .group-vibe .card{box-shadow:0 1px 6px rgba(194,101,31,.07)}
+  .group-vibe .card.active{border-color:#c2651f}
+
+  /* навигация */
+  .navbar{
+    position:sticky;top:0;z-index:50;display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;
+    background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+    border:1px solid var(--b24-line);border-radius:12px;padding:9px 12px;margin-bottom:16px;box-shadow:var(--shadow);
+  }
+  .navbar .navchips{display:flex;flex-wrap:wrap;gap:6px;flex:1;min-width:0}
+  .navbar .chip{
+    font:inherit;font-size:13px;font-weight:600;color:var(--b24-blue);background:var(--b24-soft-blue);
+    border:0;border-radius:20px;padding:6px 12px;cursor:pointer;white-space:nowrap;transition:background .15s;
+  }
+  .navbar .chip:hover{background:#d8e9fa}
+  .navbar .chip.go-summary{color:#fff;background:var(--b24-blue)}
+  .navbar .chip.go-summary:hover{background:var(--b24-blue-dark)}
+  .navbar .mini{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--b24-muted);white-space:nowrap}
+  .navbar .mini b{color:var(--b24-blue);font-size:14.5px;font-variant-numeric:tabular-nums}
+  .group-crm,.group-agents,.group-other,.group-vibe,.summary{scroll-margin-top:72px}
+  @media(max-width:560px){
+    .navbar .mini .cnt{display:none}
+  }
+
+  .card{
+    background:var(--b24-card);border:1px solid var(--b24-line);border-radius:var(--radius);
+    margin-bottom:14px;box-shadow:var(--shadow);overflow:hidden;transition:border-color .15s;
+  }
+  .group-crm .card:last-child{margin-bottom:0}
+  .card.active{border-color:var(--b24-blue)}
+  .card-head{display:flex;align-items:flex-start;gap:14px;padding:18px 20px;cursor:pointer;user-select:none}
+  .card-head:hover{background:#fafcfe}
+  .chk{
+    appearance:none;-webkit-appearance:none;min-width:22px;height:22px;margin-top:2px;
+    border:2px solid #c3d2e5;border-radius:6px;cursor:pointer;position:relative;background:#fff;transition:.15s;
+  }
+  .chk:checked{background:var(--b24-blue);border-color:var(--b24-blue)}
+  .chk:checked::after{content:"";position:absolute;left:6px;top:2px;width:6px;height:11px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  .card-title{flex:1}
+  .card-title .t{font-size:16.5px;font-weight:600}
+  .card-title .s{font-size:13.5px;color:var(--b24-muted);margin-top:3px}
+  .more{
+    display:inline-flex;align-items:center;gap:5px;margin-top:9px;
+    font-size:13px;font-weight:600;color:var(--b24-blue);text-decoration:none;
+  }
+  .more:hover{text-decoration:underline}
+  .more svg{width:14px;height:14px}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.2px}
+  .tag.fot{background:var(--b24-soft-blue);color:var(--b24-blue)}
+  .tag.rev{background:var(--b24-soft-green);color:var(--b24-green)}
+  .tag.role{background:#f1f3f7;color:#5a6b82}
+  .card-body{display:none;padding:0 20px 20px;border-top:1px solid var(--b24-line)}
+  .card.active .card-body{display:block}
+  .fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0 6px}
+  .field{display:flex;flex-direction:column}
+  .field label{display:block;font-size:13px;color:var(--b24-muted);margin-bottom:5px;line-height:1.3}
+  .field .in{display:flex;align-items:center;border:1.5px solid var(--b24-line);border-radius:9px;background:#fff;overflow:hidden;transition:border-color .15s;margin-top:auto}
+  .field .in:focus-within{border-color:var(--b24-blue)}
+  .field input{flex:1;border:0;outline:0;padding:9px 11px;font-size:15px;width:100%;background:transparent;color:var(--b24-text);font-family:inherit;font-variant-numeric:tabular-nums}
+  .field input:disabled{color:var(--b24-muted);background:#f6f8fb}
+  .field .suf{font-size:12.5px;color:var(--b24-muted);padding:0 11px;white-space:nowrap}
+  .field.locked label::after{content:" · фикс.";color:#b3bccb}
+  .err{color:#d23f3f;font-size:12.5px;margin-top:5px;display:none}
+  .field.invalid .in{border-color:#d23f3f}
+  .field.invalid .err{display:block}
+  .result{margin-top:16px;background:#f7fafd;border:1px solid var(--b24-line);border-radius:11px;padding:14px 16px}
+  .res-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;font-size:14px}
+  .res-row .lbl{color:var(--b24-muted)}
+  .res-row .val{font-weight:600;font-variant-numeric:tabular-nums}
+  .res-row.total{border-top:1px dashed #d6e0ec;margin-top:6px;padding-top:10px;font-size:15px}
+  .res-row.total .val{color:var(--b24-blue)}
+  .res-row .val.rev{color:var(--b24-green)}
+  .breakdown{font-size:12.5px;color:var(--b24-muted);margin:2px 0 8px;padding-left:2px}
+  .breakdown div{padding:2px 0}
+  .note{font-size:13px;color:#5a6b82;background:#fffaf0;border:1px solid #f3e6c4;border-radius:9px;padding:10px 13px;margin-top:12px}
+  .summary{
+    margin-top:26px;background:linear-gradient(135deg,#143b66,#1d6fb8);color:#fff;
+    border-radius:var(--radius);padding:24px 26px;box-shadow:var(--shadow);
+  }
+  .summary h2{margin:0 0 16px;font-size:19px}
+  .sum-grid{display:grid;grid-template-columns:1fr auto auto;gap:10px 22px;align-items:baseline}
+  .sum-grid .h{font-size:12px;text-transform:uppercase;letter-spacing:.6px;opacity:.7;font-weight:600;text-align:right}
+  .sum-grid .lbl{font-size:14.5px;opacity:.95}
+  .sum-grid .num{font-size:15.5px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sum-grid .grand{font-size:19px;font-weight:800}
+  .sum-grid .grand.eco{color:#9ff5c4}
+  .sum-line{grid-column:1/-1;height:1px;background:rgba(255,255,255,.22);margin:6px 0}
+  .sum-grid .row-total .lbl{font-weight:700;opacity:1}
+  .sum-grid .cost .lbl,.sum-grid .lbl.cost{opacity:.7;font-size:13.5px}
+  .sum-grid .num.cost{opacity:.7;font-size:13.5px;font-weight:600}
+  .verdict{grid-column:1/-1;margin-top:12px;display:flex;align-items:center;gap:9px;
+    background:rgba(31,164,99,.18);border:1px solid rgba(159,245,196,.45);
+    border-radius:10px;padding:11px 14px;font-size:14px}
+  .verdict svg{width:18px;height:18px;color:#9ff5c4;flex:none}
+  .verdict b{color:#9ff5c4}
+  .summary .empty{opacity:.85;font-size:14.5px}
+  .qual{margin-top:16px;background:rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;font-size:14px}
+
+  /* кнопка скачивания */
+  .dl-btn{
+    margin-top:18px;width:100%;padding:13px;border:0;border-radius:11px;cursor:pointer;
+    font:inherit;font-size:15px;font-weight:700;color:var(--b24-blue);background:#fff;
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.15s;
+  }
+  .dl-btn svg{width:18px;height:18px}
+  .dl-btn:hover:not(:disabled){background:#eaf3fc}
+  .dl-btn:disabled{opacity:.45;cursor:not-allowed}
+
+  /* модалка выбора тарифа */
+  .modal-overlay{position:fixed;inset:0;z-index:1000;background:rgba(20,40,70,.55);
+    display:flex;align-items:center;justify-content:center;padding:18px}
+  .modal-overlay[hidden]{display:none}
+  .modal{background:#fff;border-radius:16px;max-width:480px;width:100%;padding:22px 24px;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);color:var(--b24-text)}
+  .modal h3{margin:0 0 4px;font-size:18px}
+  .modal .msub{margin:0 0 16px;font-size:13.5px;color:var(--b24-muted)}
+  .modal-field{margin-bottom:16px}
+  .modal-field label{display:block;font-size:13px;color:var(--b24-muted);margin-bottom:5px}
+  .modal-field input{width:100%;border:1.5px solid var(--b24-line);border-radius:9px;
+    padding:10px 12px;font:inherit;font-size:15px;color:var(--b24-text);outline:0;transition:border-color .15s}
+  .modal-field input:focus{border-color:var(--b24-blue)}
+  .tariff-list{display:flex;flex-direction:column;gap:8px;max-height:58vh;overflow:auto}
+  .tariff-opt{display:flex;align-items:center;gap:12px;border:1.5px solid var(--b24-line);
+    border-radius:10px;padding:11px 14px;cursor:pointer;transition:.15s}
+  .tariff-opt:hover{border-color:var(--b24-blue);background:#fafcfe}
+  .tariff-opt.sel{border-color:var(--b24-blue);background:var(--b24-soft-blue)}
+  .tariff-opt input{accent-color:var(--b24-blue);width:18px;height:18px;margin:0}
+  .tariff-opt .nm{flex:1;font-weight:600;font-size:14.5px}
+  .tariff-opt .pr{font-size:13px;color:var(--b24-muted);white-space:nowrap}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+  .btn-primary{background:var(--b24-blue);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+  .btn-primary:hover{background:var(--b24-blue-dark)}
+  .btn-secondary{background:#eef2f7;color:#5a6b82;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+  .btn-secondary:hover{background:#e2e8f1}
+
+  /* иконка «как считается» + всплывающее пояснение */
+  .info-btn{background:none;border:0;cursor:pointer;color:var(--b24-muted);padding:2px;
+    display:inline-flex;align-items:center;border-radius:6px;transition:.15s;vertical-align:middle}
+  .info-btn:hover{color:var(--b24-blue);background:var(--b24-soft-blue)}
+  .info-btn svg{width:17px;height:17px}
+  .res-head{display:flex;justify-content:flex-end;margin:-2px 0 4px}
+  .summary h2{display:flex;align-items:center;gap:8px}
+  .summary h2 .info-btn{color:rgba(255,255,255,.85)}
+  .summary h2 .info-btn:hover{color:#fff;background:rgba(255,255,255,.15)}
+  .modal-overlay .modal{position:relative}
+  .modal-x{position:absolute;top:12px;right:14px;background:none;border:0;font-size:24px;
+    line-height:1;color:var(--b24-muted);cursor:pointer;padding:0 4px}
+  .modal-x:hover{color:var(--b24-text)}
+  .modal .info-text{font-size:14.5px;color:var(--b24-text);line-height:1.6;margin:6px 0 0}
+
+  .foot{text-align:center;color:var(--b24-muted);font-size:12.5px;margin-top:22px}
+  @media(max-width:560px){
+    .head{padding:20px}
+    .head h1{font-size:20px}
+    .sum-grid{grid-template-columns:1fr auto;gap:8px 14px}
+    .sum-grid .h.year,.sum-grid .num.year{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <h1>Калькулятор экономии от внедрения BitrixGPT</h1>
+    <p>Оцените экономический эффект от внедрения ИИ BitrixGPT в Битрикс24. Отметьте релевантные сценарии и при необходимости скорректируйте значения — расчёт обновляется мгновенно.</p>
+  </div>
+  <div class="hint">Выберите галочкой сценарии, которые подходят вашему бизнесу. Для каждого можно изменить исходные данные — итог пересчитается автоматически.</div>
+
+  <div class="navbar">
+    <div class="navchips">
+      <button class="chip" data-go="sec-crm">Сценарии в CRM</button>
+      <button class="chip" data-go="sec-agents">ИИ-агенты</button>
+      <button class="chip" data-go="sec-other">Другие</button>
+      <button class="chip" data-go="sec-vibe">VibeCode</button>
+      <button class="chip go-summary" data-go="sec-summary">Итог ↓</button>
+    </div>
+    <div class="mini">
+      <span class="cnt" id="nav-count">Ничего не выбрано</span>
+      <span id="nav-total"></span>
+    </div>
+  </div>
+
+  <div id="scenarios"></div>
+
+  <div class="summary" id="sec-summary">
+    <h2>Общий эффект BitrixGPT <button class="info-btn" data-info="summary" aria-label="Как считается общий эффект"></button></h2>
+    <div id="summary-body"></div>
+    <button class="dl-btn" id="dl-btn" disabled>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Скачать результат (PDF)
+    </button>
+  </div>
+
+  <div class="foot">Все суммы — в рублях, округление до целых. Налоговая модель упрощённая (оклад на руки × 1,4). Расчёт носит оценочный характер.</div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------- Базовые константы и формулы (Глоссарий) ---------- */
+const TAX = 1.4;          // налоговая нагрузка
+const HOURS_MONTH = 176;  // рабочих часов в месяце
+const DAYS_MONTH = 22;    // рабочих дней в месяце
+const DAY_HOURS = 8;      // длина рабочего дня
+
+const costHour   = salary => salary * TAX / HOURS_MONTH;       // стоимость часа
+const costMinute = salary => costHour(salary) / 60;            // стоимость минуты
+
+const COST_YEAR = 9600;   // стоимость BitrixGPT, ₽/год (от)
+
+/* ---------- Конфигурация сценариев (в порядке отображения) ---------- */
+const scenarios = [
+  {
+    id:1,
+    title:"Расшифровка звонков и заполнение карточки сделки",
+    sub:"BitrixGPT расшифровывает звонки и автоматически заполняет карточку сделки — менеджер не слушает записи и не заполняет поля вручную.",
+    link:"https://helpdesk.bitrix24.ru/open/18799442/",
+    role:"Менеджер по продажам", effect:["fot","rev"], crm:true,
+    fields:[
+      {k:"mgr",   label:"Количество менеджеров",            def:1,        suf:"чел."},
+      {k:"sal",   label:"Оклад менеджера (на руки)",        def:100000,   suf:"₽/мес"},
+      {k:"calls", label:"Звонков в день на менеджера",      def:20,       suf:"шт."},
+      {k:"time",  label:"Время обработки одного звонка",    def:10,       suf:"мин"},
+      {k:"plan",  label:"План менеджера",                   def:1000000,  suf:"₽/мес"},
+      {k:"coef",  label:"Доля эффективно потраченного сэкономленного времени", def:0.3, suf:"доля"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.calls * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.mgr;
+      const freedShare = (savedMinDay / 60) / DAY_HOURS;
+      const rev = freedShare * v.plan * v.coef * v.mgr;
+      return {fot, rev};
+    }
+  },
+  {
+    id:4,
+    title:"Оценка следования скрипту (РОП + речевая аналитика)",
+    sub:"РОП вручную прослушивает звонки и оценивает соответствие скрипту (~10% времени). BitrixGPT покрывает 100% звонков и делает оценку за него.",
+    link:"https://helpdesk.bitrix24.ru/open/23240682/",
+    role:"Руководитель отдела продаж", effect:["fot"], crm:true,
+    fields:[
+      {k:"rop",   label:"Количество РОПов",               def:1,      suf:"чел."},
+      {k:"sal",   label:"Оклад РОПа (на руки)",           def:200000, suf:"₽/мес"},
+      {k:"share", label:"Процент времени РОПа на проверку звонков", def:0.10,  suf:"доля"},
+    ],
+    compute:v=>{
+      const fullCost = v.sal * TAX;
+      const fot = fullCost * v.share * v.rop;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:5,
+    title:"Повторные продажи по базе",
+    sub:"BitrixGPT генерирует повторные продажи по существующей базе и ставит менеджерам сделки, которые те закрывают.",
+    link:"https://helpdesk.bitrix24.ru/open/25376986/",
+    role:"Эффект на уровне выручки", effect:["rev"], crm:true,
+    fields:[
+      {k:"base",  label:"Размер базы клиентов",            def:1000,  suf:"шт."},
+      {k:"check", label:"Средний чек сделки",              def:50000, suf:"₽"},
+      {k:"conv",  label:"Конверсия в повторную продажу",   def:0.10,  suf:"доля", locked:true},
+    ],
+    compute:v=>{
+      const rev = v.base * v.conv * v.check;
+      return {fot:0, rev};
+    }
+  },
+  {
+    id:9,
+    title:"Голосовое управление Битрикс24",
+    sub:"Сотрудник управляет Битрикс24 голосом или текстом через ИИ-агента: сделки и лиды, задачи, бизнес-процессы, файлы и документы, смена стадий, аналитика — вместо ручных кликов и переходов по меню.",
+    link:"golos-bitrix24.html",
+    role:"Сотрудники", effect:["fot"], agents:true,
+    note:"Учитываются рутинные операции в Битрикс24 (сделки, задачи, процессы, файлы, поиск, создание, смена стадий, аналитика). Не включает заполнение карточки после звонков — это сценарий «Расшифровка звонков», чтобы не считать одно и то же время дважды.",
+    fields:[
+      {k:"mgr",  label:"Количество сотрудников",                def:1,      suf:"чел."},
+      {k:"sal",  label:"Средний оклад сотрудника",              def:100000, suf:"₽/мес"},
+      {k:"ops",  label:"Операций в Битрикс24 в день",           def:30,     suf:"шт."},
+      {k:"time", label:"Экономия времени на операцию",          def:3,      suf:"мин"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.ops * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.mgr;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:2,
+    title:"Агент первой линии поддержки",
+    sub:"BitrixGPT обрабатывает входящие обращения клиентов. Часть закрывает сам, остальные уходят оператору.",
+    link:"podderzhka-bitrix24.html",
+    role:"Специалист поддержки", effect:["fot"], agents:true,
+    fields:[
+      {k:"spec", label:"Количество специалистов поддержки", def:1,     suf:"чел."},
+      {k:"sal",  label:"Оклад специалиста (на руки)",       def:70000, suf:"₽/мес"},
+      {k:"total",label:"Обращений в день (всего)",          def:40,    suf:"шт."},
+      {k:"ai",   label:"Из них закрывает ИИ",               def:30,    suf:"шт."},
+      {k:"time", label:"Время обработки одного обращения",  def:7,     suf:"мин"},
+    ],
+    validate:v=> v.ai>v.total ? {ai:"Не больше «обращений всего»"} : null,
+    compute:v=>{
+      const ai = Math.min(v.ai, v.total);
+      const savedMinDay = ai * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.spec;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:10,
+    title:"Агент по базе знаний",
+    sub:"Сотрудники задают вопросы ИИ-агенту в чате и мгновенно получают ответы из загруженных регламентов и инструкций — вместо поиска по документам или отвлечения коллег.",
+    link:"https://helpdesk.bitrix24.ru/open/27455370/",
+    role:"Все сотрудники", effect:["fot"], agents:true,
+    note:"Считается только время спрашивающего сотрудника. Время отвлекаемых коллег-экспертов — дополнительный бонус, который мы намеренно не начисляем. Не дублируйте этот эффект со сценарием «BitrixGPT для всех» (+10%).",
+    fields:[
+      {k:"emp",   label:"Сотрудников, пользующихся базой знаний", def:50,     suf:"чел."},
+      {k:"sal",   label:"Средний оклад сотрудника",               def:100000, suf:"₽/мес"},
+      {k:"q",     label:"Обращений к базе знаний в день",         def:3,      suf:"шт."},
+      {k:"t",     label:"Время на поиск ответа вручную",          def:10,     suf:"мин"},
+      {k:"share", label:"Доля вопросов, на которые отвечает ИИ",  def:0.7,    suf:"доля"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.q * v.t * v.share;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.emp;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:11,
+    title:"Личный ассистент",
+    sub:"ИИ-агент утром формирует план дня по задачам и календарю, вечером собирает итог. Руководителям сводит десятки ежедневных отчётов команды в один one-pager.",
+    link:"assistant-bitrix24.html",
+    role:"Все сотрудники + руководители", effect:["fot"], agents:true,
+    note:"Считаются план дня/итог у сотрудников и сводный отчёт у руководителей (это разные затраты времени, не пересекаются). Не дублируйте со сценарием «BitrixGPT для всех» (+10%).",
+    fields:[
+      {k:"emp",    label:"Всего сотрудников",                     def:50,     suf:"чел."},
+      {k:"empSal", label:"Средний оклад сотрудника",              def:100000, suf:"₽/мес"},
+      {k:"empMin", label:"Экономия времени сотрудника в день",    def:20,     suf:"мин"},
+      {k:"mgr",    label:"Количество руководителей",              def:5,      suf:"чел."},
+      {k:"mgrSal", label:"Оклад руководителя",                    def:200000, suf:"₽/мес"},
+      {k:"mgrMin", label:"Экономия времени руководителя в день",  def:30,     suf:"мин"},
+    ],
+    compute:v=>{
+      const A = v.empMin * DAYS_MONTH / 60 * costHour(v.empSal) * v.emp;
+      const B = v.mgrMin * DAYS_MONTH / 60 * costHour(v.mgrSal) * v.mgr;
+      return {fot:A+B, rev:0, breakdown:[
+        ["Сотрудники · план дня и итог", A],
+        ["Руководители · сводный отчёт", B],
+      ]};
+    }
+  },
+  {
+    id:12,
+    title:"Агент онлайн-записи",
+    sub:"Голосовой ИИ-агент сам обзванивает клиентов по онлайн-записи: подтверждает визит, напоминает, реагирует на опоздание и сохраняет исход в карточке — вместо ручного обзвона администратором.",
+    link:"zapis-bitrix24.html",
+    role:"Администратор / ресепшн", effect:["fot","rev"], agents:true,
+    note:"Прирост выручки считается только по возвращённым неявкам — консервативно, без накрутки.",
+    fields:[
+      {k:"visits",  label:"Записей (визитов) в месяц",  def:800,   suf:"шт."},
+      {k:"perRec",  label:"Звонков на одну запись",     def:2,     suf:"шт."},
+      {k:"time",    label:"Время на звонок вручную",    def:3,     suf:"мин"},
+      {k:"admSal",  label:"Оклад администратора",       def:60000, suf:"₽/мес"},
+      {k:"check",   label:"Средний чек визита",         def:2000,  suf:"₽"},
+      {k:"noShow",  label:"Доля неявок сейчас",         def:0.20,  suf:"доля"},
+      {k:"recover", label:"Доля возвращённых неявок",   def:0.30,  suf:"доля"},
+    ],
+    compute:v=>{
+      const savedHoursMonth = v.visits * v.perRec * v.time / 60;
+      const fot = savedHoursMonth * costHour(v.admSal);
+      const rev = v.visits * v.noShow * v.recover * v.check;
+      return {fot, rev};
+    }
+  },
+  {
+    id:3,
+    title:"Генерация документов",
+    sub:"BitrixGPT создаёт документы по шаблонам и пишет тексты вместо ручного составления: КП, договоры, письма, инструкции, отчёты. КП — лишь один из примеров.",
+    link:"documents-bitrix24.html",
+    role:"Любой сотрудник", effect:["fot"],
+    fields:[
+      {k:"emp",  label:"Сотрудников, готовящих документы", def:5,      suf:"чел."},
+      {k:"sal",  label:"Средний оклад сотрудника",         def:100000, suf:"₽/мес"},
+      {k:"docs", label:"Документов/писем в день",          def:5,      suf:"шт."},
+      {k:"time", label:"Время на один документ",           def:20,     suf:"мин"},
+    ],
+    compute:v=>{
+      const savedMinDay = v.docs * v.time;
+      const savedHoursMonth = savedMinDay * DAYS_MONTH / 60;
+      const fot = savedHoursMonth * costHour(v.sal) * v.emp;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:6,
+    title:"Follow-up (транскрибация общих встреч)",
+    sub:"Сервис транскрибирует все внутренние встречи: время встреч сокращается на 15%, участников становится меньше на 15%, ассистент для протокола и выводов не нужен.",
+    link:"https://helpdesk.bitrix24.ru/open/23529044/",
+    role:"Сотрудники + ассистент", effect:["fot"],
+    fields:[
+      {k:"meet",  label:"Общих встреч в месяц",            def:8,      suf:"шт."},
+      {k:"dur",   label:"Средняя длительность встречи",    def:60,     suf:"мин"},
+      {k:"part",  label:"Среднее число участников",        def:6,      suf:"чел."},
+      {k:"psal",  label:"Средний оклад участника",         def:100000, suf:"₽/мес"},
+      {k:"asal",  label:"Оклад ассистента",               def:70000,  suf:"₽/мес"},
+    ],
+    compute:v=>{
+      const cmP = costMinute(v.psal);
+      const cmA = costMinute(v.asal);
+      const A = v.meet * v.dur * 0.15 * v.part * cmP;          // короче встречи на 15%
+      const B = v.meet * v.dur * (v.part * 0.15) * cmP;        // меньше участников на 15%
+      const C = v.meet * v.dur * cmA;                          // ассистент освобождается
+      return {fot:A+B+C, rev:0, breakdown:[
+        ["А · короче встречи на 15%", A],
+        ["Б · меньше участников на 15%", B],
+        ["В · протокол и выводы (ассистент)", C],
+      ]};
+    }
+  },
+  {
+    id:7,
+    title:"Общее повышение эффективности (BitrixGPT для всех)",
+    sub:"Любой сотрудник использует BitrixGPT для личной эффективности: обсуждения, идеи, тексты, обратная связь. Средняя оценка прироста — 10%.",
+    link:"https://helpdesk.bitrix24.ru/open/18505482/",
+    role:"Все сотрудники на портале", effect:["fot"],
+    fields:[
+      {k:"emp", label:"Всего сотрудников на портале", def:1,      suf:"чел."},
+      {k:"sal", label:"Средний оклад сотрудника",     def:100000, suf:"₽/мес"},
+      {k:"eff", label:"Прирост эффективности",        def:0.10,   suf:"доля"},
+    ],
+    compute:v=>{
+      const fot = v.sal * TAX * v.eff * v.emp;
+      return {fot, rev:0};
+    }
+  },
+  {
+    id:8,
+    title:"VibeCode",
+    sub:"Инициативные сотрудники (~10%) с помощью VibeCode автоматизируют свою работу и процессы в отделе/компании. Консервативная оценка повышения их личной эффективности – 30%.",
+    link:"https://helpdesk.bitrix24.ru/open/28505406/",
+    role:"Инициативные сотрудники", effect:["fot"], vibe:true,
+    fields:[
+      {k:"emp",   label:"Всего сотрудников",                  def:10,     suf:"чел."},
+      {k:"share", label:"Доля инициативных",                 def:0.10,   suf:"доля"},
+      {k:"sal",   label:"Оклад инициативного сотрудника",    def:100000, suf:"₽/мес"},
+      {k:"simp",  label:"Упрощение работы",                  def:0.30,   suf:"доля"},
+    ],
+    compute:v=>{
+      const initiative = Math.round(v.emp * v.share);   // матем. округление
+      const fot = v.sal * TAX * v.simp * initiative;
+      return {fot, rev:0, breakdown:[
+        ["Инициативных сотрудников", initiative, "int"],
+      ]};
+    },
+    qualitative:"После работы активных сотрудников бизнес-процессы компании в среднем ускоряются и повышают эффективность на ~20%."
+  },
+];
+
+/* ---------- Форматирование чисел ---------- */
+// группировка разрядов для значения поля ввода (сохраняет дробную часть и хвостовую точку при наборе)
+function groupFmt(s){
+  s = String(s).replace(/\s/g,'').replace(',','.').replace(/[^\d.]/g,'');
+  if(s==='') return '';
+  const parts = s.split('.');
+  let int = parts[0].replace(/^0+(?=\d)/,'');
+  if(int==='') int='0';
+  int = int.replace(/\B(?=(\d{3})+(?!\d))/g,' ');
+  return parts.length>1 ? int+'.'+parts[1] : int;
+}
+function parseNum(s){
+  s = String(s).replace(/\s/g,'').replace(',','.').replace(/[^\d.]/g,'');
+  const n = parseFloat(s);
+  return isNaN(n) || n<0 ? 0 : n;
+}
+// форматирование с сохранением позиции курсора
+function onNumInput(inp){
+  const old = inp.value;
+  const sel = inp.selectionStart;
+  const digitsBefore = old.slice(0,sel).replace(/[^\d]/g,'').length;
+  const formatted = groupFmt(old);
+  inp.value = formatted;
+  let count=0, pos=0;
+  if(digitsBefore>0){
+    for(; pos<formatted.length; pos++){
+      if(/\d/.test(formatted[pos])) count++;
+      if(count>=digitsBefore){ pos++; break; }
+    }
+  }
+  inp.setSelectionRange(pos,pos);
+  return parseNum(formatted);
+}
+
+const fmtMoney = n => Math.round(n).toLocaleString("ru-RU") + " ₽";
+const fmtInt   = n => Math.round(n).toLocaleString("ru-RU");
+const state = {}; // state[id] = {selected, values}
+
+const ICON_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+/* ---------- Рендер карточек ---------- */
+const root = document.getElementById("scenarios");
+
+// контейнер для группы CRM (первые 4 сценария)
+const crmGroup = document.createElement("div");
+crmGroup.className = "group-crm";
+crmGroup.id = "sec-crm";
+crmGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 4v5"/></svg>'
+  + '<span>Сценарии в CRM</span></div>';
+root.appendChild(crmGroup);
+
+// контейнер для группы ИИ-агентов
+const agentsGroup = document.createElement("div");
+agentsGroup.className = "group-agents";
+agentsGroup.id = "sec-agents";
+agentsGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M12 8V4"/><circle cx="12" cy="3" r="1"/><path d="M9 13h.01M15 13h.01"/><path d="M2 14v2M22 14v2"/></svg>'
+  + '<span>ИИ-агенты</span></div>';
+root.appendChild(agentsGroup);
+
+// контейнер для прочих сценариев
+const otherGroup = document.createElement("div");
+otherGroup.className = "group-other";
+otherGroup.id = "sec-other";
+otherGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'
+  + '<span>Другие сценарии</span></div>';
+root.appendChild(otherGroup);
+
+// контейнер для группы VibeCode
+const vibeGroup = document.createElement("div");
+vibeGroup.className = "group-vibe";
+vibeGroup.id = "sec-vibe";
+vibeGroup.innerHTML = '<div class="group-label">'
+  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>'
+  + '<span>VibeCode</span></div>';
+root.appendChild(vibeGroup);
+
+scenarios.forEach((sc, idx)=>{
+  const num = idx + 1;
+  state[sc.id] = {selected:false, values:{}};
+  sc.fields.forEach(f=> state[sc.id].values[f.k] = f.def);
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.id = "card-"+sc.id;
+
+  const tags = sc.effect.map(e=> e==="fot"
+    ? '<span class="tag fot">Экономия ФОТ</span>'
+    : '<span class="tag rev">Прирост выручки</span>').join("")
+    + `<span class="tag role">${sc.role}</span>`;
+
+  const more = sc.link
+    ? `<a class="more" href="${sc.link}" target="_blank" rel="noopener noreferrer">${ICON_INFO}Подробнее</a>`
+    : "";
+
+  const fieldsHtml = sc.fields.map(f=>{
+    const isPct = f.suf==="доля";                       // доли вводим как проценты
+    const dispDef = isPct ? Math.round(f.def*1000)/10 : f.def;
+    const suf = isPct ? "%" : f.suf;
+    return `
+      <div class="field ${f.locked?'locked':''}" data-field="${f.k}">
+        <label>${f.label}</label>
+        <div class="in">
+          <input type="text" inputmode="decimal" class="num-in"
+                 value="${groupFmt(String(dispDef))}" data-k="${f.k}"${isPct?' data-pct="1"':''} ${f.locked?'disabled':''}>
+          <span class="suf">${suf}</span>
+        </div>
+        <div class="err"></div>
+      </div>`;
+  }).join("");
+
+  card.innerHTML = `
+    <div class="card-head">
+      <input type="checkbox" class="chk" data-id="${sc.id}">
+      <div class="card-title">
+        <div class="t">${num}. ${sc.title}</div>
+        <div class="s">${sc.sub}</div>
+        ${more}
+        <div class="tags">${tags}</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="fields">${fieldsHtml}</div>
+      <div class="result" id="res-${sc.id}"></div>
+      ${sc.note?`<div class="note">${sc.note}</div>`:''}
+      ${sc.qualitative?`<div class="note">${sc.qualitative}</div>`:''}
+    </div>`;
+
+  (sc.crm ? crmGroup : sc.agents ? agentsGroup : sc.vibe ? vibeGroup : otherGroup).appendChild(card);
+
+  // toggle (клик по ссылке "Подробнее" не переключает сценарий)
+  const chk = card.querySelector(".chk");
+  card.querySelector(".card-head").addEventListener("click", e=>{
+    if(e.target.closest(".more")) return;
+    if(e.target!==chk){ chk.checked = !chk.checked; }
+    state[sc.id].selected = chk.checked;
+    card.classList.toggle("active", chk.checked);
+    recompute();
+  });
+
+  // ввод чисел с разделителями разрядов
+  card.querySelectorAll(".num-in:not([disabled])").forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const n = onNumInput(inp);
+      state[sc.id].values[inp.dataset.k] = inp.dataset.pct ? n/100 : n;  // % -> доля
+      recompute();
+    });
+  });
+});
+
+/* ---------- Навигация (плавный скролл по чипсам) ---------- */
+document.querySelectorAll(".navbar .chip").forEach(btn=>{
+  btn.addEventListener("click", ()=>{
+    const el = document.getElementById(btn.dataset.go);
+    if(el) el.scrollIntoView({behavior:"smooth", block:"start"});
+  });
+});
+
+function plural(n, forms){ // forms = [один, два, пять]
+  const n10 = n % 10, n100 = n % 100;
+  if(n10===1 && n100!==11) return forms[0];
+  if(n10>=2 && n10<=4 && (n100<10 || n100>=20)) return forms[1];
+  return forms[2];
+}
+
+/* ---------- Пересчёт ---------- */
+function recompute(){
+  let totalFot=0, totalRev=0, anySelected=false, showQual=false, selectedCount=0;
+
+  scenarios.forEach(sc=>{
+    const st = state[sc.id];
+    const card = document.getElementById("card-"+sc.id);
+    const resEl = document.getElementById("res-"+sc.id);
+
+    // сброс ошибок
+    card.querySelectorAll(".field").forEach(f=>f.classList.remove("invalid"));
+    const errors = sc.validate ? sc.validate(st.values) : null;
+    if(errors){
+      Object.entries(errors).forEach(([k,msg])=>{
+        const f = card.querySelector(`.field[data-field="${k}"]`);
+        if(f){ f.classList.add("invalid"); f.querySelector(".err").textContent = msg; }
+      });
+    }
+
+    if(!st.selected){ resEl.innerHTML=""; return; }
+    anySelected = true;
+    selectedCount++;
+    if(sc.qualitative) showQual = true;
+
+    const r = sc.compute(st.values);
+    const fotY = r.fot*12, revY = r.rev*12;
+    totalFot += r.fot; totalRev += r.rev;
+
+    let rows = `<div class="res-head"><button class="info-btn" data-info="${sc.id}" aria-label="Как считается экономия">${ICON_INFO}</button></div>`;
+    if(r.breakdown){
+      rows += '<div class="breakdown">' + r.breakdown.map(b=>{
+        const isInt = b[2]==="int";
+        return `<div>${b[0]}: <b>${isInt?fmtInt(b[1]):fmtMoney(b[1])}${isInt?'':' /мес'}</b></div>`;
+      }).join("") + '</div>';
+    }
+    if(sc.effect.includes("fot")){
+      rows += row("Экономия ФОТ, месяц", fmtMoney(r.fot));
+      rows += row("Экономия ФОТ, год", fmtMoney(fotY));
+    }
+    if(sc.effect.includes("rev")){
+      rows += row("Прирост выручки, месяц", fmtMoney(r.rev), "rev");
+      rows += row("Прирост выручки, год", fmtMoney(revY), "rev");
+    }
+    const totMonth = r.fot + r.rev;
+    if(sc.effect.length>1){
+      rows += `<div class="res-row total"><span class="lbl">Итого по сценарию, месяц</span><span class="val">${fmtMoney(totMonth)}</span></div>`;
+      rows += `<div class="res-row total"><span class="lbl">Итого по сценарию, год</span><span class="val">${fmtMoney(totMonth*12)}</span></div>`;
+    }
+    resEl.innerHTML = rows;
+  });
+
+  renderSummary(totalFot, totalRev, anySelected, showQual);
+
+  // обновление панели навигации
+  const cntEl = document.getElementById("nav-count");
+  const totEl = document.getElementById("nav-total");
+  if(selectedCount){
+    cntEl.textContent = "Выбрано: " + selectedCount + " " + plural(selectedCount, ["сценарий","сценария","сценариев"]);
+    totEl.innerHTML = "Эффект: <b>" + fmtMoney(totalFot + totalRev) + "/мес</b>";
+  } else {
+    cntEl.textContent = "Ничего не выбрано";
+    totEl.innerHTML = "";
+  }
+}
+
+function row(lbl,val,cls){
+  return `<div class="res-row"><span class="lbl">${lbl}</span><span class="val ${cls||''}">${val}</span></div>`;
+}
+
+/* ---------- Итоговый блок ---------- */
+function renderSummary(fot, rev, any, qual){
+  const el = document.getElementById("summary-body");
+  document.getElementById("dl-btn").disabled = !any;
+  if(!any){
+    el.innerHTML = '<div class="empty">Выберите хотя бы один сценарий, чтобы увидеть совокупный эффект.</div>';
+    return;
+  }
+  const grand = fot + rev;
+  const grandYear = grand*12;
+  const ratio = grandYear / COST_YEAR;
+  const ratioTxt = ratio>=10 ? Math.round(ratio).toLocaleString("ru-RU")
+                             : ratio.toFixed(1).replace(".",",");
+  el.innerHTML = `
+    <div class="sum-grid">
+      <div class="h"></div><div class="h">Месяц</div><div class="h year">Год</div>
+      <div class="lbl">Суммарная экономия ФОТ</div>
+      <div class="num">${fmtMoney(fot)}</div>
+      <div class="num year">${fmtMoney(fot*12)}</div>
+      <div class="lbl">Суммарный прирост выручки</div>
+      <div class="num">${fmtMoney(rev)}</div>
+      <div class="num year">${fmtMoney(rev*12)}</div>
+      <div class="sum-line"></div>
+      <div class="lbl row-total">Общий эффект BitrixGPT</div>
+      <div class="num grand eco">${fmtMoney(grand)}</div>
+      <div class="num grand eco year">${fmtMoney(grandYear)}</div>
+      <div class="lbl cost">Стоимость BitrixGPT</div>
+      <div class="num cost">от ${fmtMoney(COST_YEAR/12)}</div>
+      <div class="num cost year">от ${fmtMoney(COST_YEAR)}</div>
+      ${grand>0?`<div class="verdict">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span>Экономия за год выгоднее стоимости BitrixGPT в <b>${ratioTxt}×</b></span>
+      </div>`:''}
+    </div>
+    ${qual?`<div class="qual">После работы активных сотрудников бизнес-процессы компании в среднем ускоряются и повышают эффективность на ~20%.</div>`:''}
+  `;
+}
+
+/* ---------- Документ для скачивания (PDF через печать) ---------- */
+const TARIFFS = [
+  {id:"basic",      name:"Базовый",            costYear:9600,   price:"9 600 ₽/год"},
+  {id:"standard",   name:"Стандартный",        costYear:28800,  price:"28 800 ₽/год"},
+  {id:"pro",        name:"Профессиональный",   costYear:57600,  price:"57 600 ₽/год"},
+  {id:"enterprise", name:"Энтерпрайз",         costYear:130560, from:true, price:"от 130 560 ₽/год"},
+  {id:"free",       name:"Бесплатный",         variant:"free",  price:"0 ₽"},
+  {id:"none",       name:"Ещё нет Битрикс24",  variant:"none",  price:""},
+];
+
+function fieldDisplay(f, val){
+  if(f.suf==="доля") return (Math.round(val*1000)/10).toString().replace(".",",") + " %";
+  return groupFmt(String(val)) + " " + f.suf;
+}
+
+function collectResults(){
+  const items=[]; let totalFot=0, totalRev=0;
+  scenarios.forEach((sc, idx)=>{
+    const st = state[sc.id];
+    if(!st.selected) return;
+    const r = sc.compute(st.values);
+    totalFot += r.fot; totalRev += r.rev;
+    items.push({
+      num: idx+1, title: sc.title, effect: sc.effect, fot: r.fot, rev: r.rev,
+      params: sc.fields.map(f=>({label:f.label, val:fieldDisplay(f, st.values[f.k])})),
+    });
+  });
+  return {items, totalFot, totalRev};
+}
+
+function buildReportHtml(tariff, company){
+  const {items, totalFot, totalRev} = collectResults();
+  const grand = totalFot + totalRev, grandYear = grand*12;
+  const dateStr = new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
+  const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const companyLine = company ? "<div class='co'>"+esc(company)+"</div>" : "";
+  const special = (tariff.variant==="free" || tariff.variant==="none");
+
+  let costYear, costName, intro, verdictTxt, recommend="";
+  if(special){
+    costYear = 9600;
+    costName = "Подписка BitrixGPT — тариф «Базовый» (минимальный платный)";
+    intro = tariff.variant==="free"
+      ? "Вы используете бесплатный тариф Битрикс24. ИИ-инструменты BitrixGPT подключаются на платных тарифах — от 9 600 ₽/год (тариф «Базовый»). Ниже — эффект, который вы получите после перехода."
+      : "У вас пока нет Битрикс24. Ниже — ваш потенциальный экономический эффект от внедрения BitrixGPT. Подписка начинается от 9 600 ₽/год (тариф «Базовый»); у Битрикс24 есть и бесплатный стартовый тариф.";
+    verdictTxt = "Потенциальная экономия за год окупает минимальную подписку в";
+    recommend = "Рекомендуемый следующий шаг: подключить BitrixGPT на платном тарифе — по расчёту окупаемость наступает уже в первый год.";
+  } else {
+    costYear = tariff.costYear;
+    costName = "Подписка BitrixGPT — тариф «" + tariff.name + "»";
+    intro = "Ваш текущий тариф Битрикс24 — «" + tariff.name + "». Ниже — расчёт экономического эффекта от внедрения BitrixGPT и сравнение со стоимостью подписки.";
+    verdictTxt = "Экономия за год выгоднее стоимости подписки в";
+  }
+  const costPrefix = (tariff.from || special) ? "от " : "";
+  const ratio = costYear>0 ? grandYear/costYear : 0;
+  const ratioTxt = ratio>=10 ? Math.round(ratio).toLocaleString("ru-RU") : ratio.toFixed(1).replace(".",",");
+
+  const cards = items.map(it=>{
+    const num2 = String(it.num).padStart(2,"0");
+    const chips = it.params.map(p=>"<span class='chip'>"+p.label+": <b>"+p.val+"</b></span>").join("");
+    let eff="";
+    if(it.effect.includes("fot")) eff += "<div class='fot'>Экономия ФОТ — <b>"+fmtMoney(it.fot)+"</b>/мес · "+fmtMoney(it.fot*12)+"/год</div>";
+    if(it.effect.includes("rev")) eff += "<div class='rev'>Прирост выручки — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
+    return "<div class='card'><div class='chead'><span class='cnum'>"+num2+"</span><span class='ctitle'>"+it.title+"</span></div>"
+      + "<div class='cparams'>"+chips+"</div><div class='ceff'>"+eff+"</div></div>";
+  }).join("");
+
+  const GRAD = "linear-gradient(95deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,56%),hsl(195,80%,50%),hsl(175,65%,46%),hsl(160,60%,46%))";
+
+  return "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'>"
+    + "<title>Экономический эффект BitrixGPT</title>"
+    + "<link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>"
+    + "<link href='https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap' rel='stylesheet'>"
+    + "<style>"
+    + "*{box-sizing:border-box}@page{margin:13mm 12mm}"
+    + "body{font-family:Manrope,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#15151b;font-size:13px;line-height:1.55;margin:0;padding:30px 30px 24px;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+    + ".spectrum{height:5px;border-radius:3px;margin-bottom:22px;background:linear-gradient(90deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,58%),hsl(195,80%,52%),hsl(175,65%,48%),hsl(160,60%,48%))}"
+    + ".eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin:0 0 10px}"
+    + ".co{font-weight:700;font-size:14px;margin:0 0 6px;color:#15151b}"
+    + ".wordmark{font-family:Unbounded,Manrope,sans-serif;font-weight:800;font-size:33px;line-height:1.1;letter-spacing:-.01em;margin:0;padding-bottom:.06em;background:"+GRAD+";-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;margin:10px 0 0}"
+    + ".lede{color:#6b6b78;font-size:14.5px;max-width:72ch;margin:16px 0 26px}"
+    + ".sec-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin:0 0 12px}"
+    + ".card{border:1px solid #ececef;border-radius:14px;padding:15px 17px;margin-bottom:11px;break-inside:avoid}"
+    + ".chead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}"
+    + ".cnum{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;font-weight:500}"
+    + ".ctitle{font-weight:800;font-size:15px;letter-spacing:-.01em}"
+    + ".cparams{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}"
+    + ".chip{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#3a3a44;background:#fafafb;border:1px solid #ececef;border-radius:8px;padding:4px 9px}"
+    + ".chip b{color:#15151b}"
+    + ".ceff{display:flex;flex-direction:column;gap:3px;font-size:13px;border-top:1px solid #ececef;padding-top:10px}"
+    + ".ceff b{font-weight:800}.ceff .fot b{color:hsl(220,82%,50%)}.ceff .rev{color:hsl(160,55%,38%)}.ceff .rev b{color:hsl(160,55%,36%)}"
+    + ".tot{border:1px solid #ececef;border-radius:16px;overflow:hidden;break-inside:avoid;margin-top:6px}"
+    + ".trow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:12px 18px;border-bottom:1px solid #ececef}"
+    + ".trow .tv{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}"
+    + ".trow.cost .tv{color:hsl(18,70%,45%)}"
+    + ".grand{padding:18px;background:#fafafb;border-bottom:1px solid #ececef;text-align:center;break-inside:avoid}"
+    + ".grand .gl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin-bottom:8px}"
+    + ".grand .gnum{font-family:Unbounded,sans-serif;font-weight:800;font-size:40px;line-height:1;letter-spacing:-.02em;background:linear-gradient(95deg,hsl(265,75%,58%),hsl(220,82%,56%),hsl(160,60%,46%));-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".grand .gm{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6b6b78;margin-top:9px}"
+    + ".verdict{display:flex;align-items:center;gap:10px;padding:14px 18px;background:hsl(160,55%,96%);font-size:14px;font-weight:600}"
+    + ".verdict .vb{font-family:Unbounded,sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,hsl(175,65%,42%),hsl(160,60%,42%));-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".verdict svg{width:20px;height:20px;color:hsl(160,60%,44%);flex:none}"
+    + ".rec{margin-top:12px;border:1px dashed #d8d8de;border-radius:12px;padding:13px 16px;font-size:13px;color:#6b6b78}"
+    + ".ft{margin-top:22px;color:#9a9aa6;font-size:10.5px;border-top:1px solid #ececef;padding-top:12px}"
+    + ".noprint{margin-top:24px;text-align:center}"
+    + ".noprint button{font-family:Manrope,sans-serif;font-size:14px;font-weight:800;color:#fff;border:0;border-radius:10px;padding:12px 26px;cursor:pointer;background:linear-gradient(95deg,hsl(245,80%,60%),hsl(195,80%,50%))}"
+    + "@media print{.noprint{display:none}body{padding:0}.spectrum{margin-bottom:18px}}"
+    + "</style></head><body>"
+    + "<div class='spectrum'></div>"
+    + "<header>"+companyLine+"<p class='eyebrow'>Bitrix24 · BitrixGPT · Экономический эффект</p>"
+    + "<h1 class='wordmark'>Сколько сэкономит BitrixGPT</h1>"
+    + "<div class='meta'>Отчёт сформирован "+dateStr+" · тариф «"+tariff.name+"»</div>"
+    + "<p class='lede'>"+intro+"</p></header>"
+    + "<section><p class='sec-eyebrow'>Выбранные сценарии</p>"+cards+"</section>"
+    + "<section style='margin-top:24px'><p class='sec-eyebrow'>Итог</p><div class='tot'>"
+    + "<div class='trow'><span>Суммарная экономия ФОТ</span><span class='tv'>"+fmtMoney(totalFot)+"/мес · "+fmtMoney(totalFot*12)+"/год</span></div>"
+    + "<div class='trow'><span>Суммарный прирост выручки</span><span class='tv'>"+fmtMoney(totalRev)+"/мес · "+fmtMoney(totalRev*12)+"/год</span></div>"
+    + "<div class='grand'><div class='gl'>Общий эффект BitrixGPT за год</div><div class='gnum'>"+fmtMoney(grandYear)+"</div><div class='gm'>"+fmtMoney(grand)+" / мес</div></div>"
+    + "<div class='trow cost'><span>"+costName+"</span><span class='tv'>"+costPrefix+fmtMoney(costYear)+"/год · "+costPrefix+fmtMoney(costYear/12)+"/мес</span></div>"
+    + "<div class='verdict'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg><span>"+verdictTxt+" <span class='vb'>"+ratioTxt+"×</span></span></div>"
+    + "</div>"
+    + (recommend ? "<div class='rec'>"+recommend+"</div>" : "")
+    + "</section>"
+    + "<div class='ft'>Расчёт носит оценочный характер. Налоговая модель упрощённая (оклад на руки × 1,4); стоимость часа = оклад × 1,4 ÷ 176. Цены подписки BitrixGPT приведены при оплате за год.</div>"
+    + "<div class='noprint'><button onclick='window.print()'>Печать / Сохранить в PDF</button></div>"
+    + "<scr"+"ipt>(function(){function go(){window.print();}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(go,200);});setTimeout(go,1600);}else{window.onload=function(){setTimeout(go,400);};}})();</scr"+"ipt>"
+    + "</body></html>";
+}
+
+function openReport(tariff, company){
+  const html = buildReportHtml(tariff, company);
+  const w = window.open("", "_blank");
+  if(!w){ alert("Разрешите всплывающие окна, чтобы сформировать документ."); return; }
+  w.document.open(); w.document.write(html); w.document.close();
+}
+
+// модалка выбора тарифа
+const modal = document.createElement("div");
+modal.className = "modal-overlay"; modal.hidden = true;
+modal.innerHTML = "<div class='modal'>"
+  + "<h3>Выберите ваш текущий тариф Битрикс24</h3>"
+  + "<p class='msub'>Нужно, чтобы сравнить эффект со стоимостью подписки BitrixGPT.</p>"
+  + "<div class='modal-field'><label>Название компании <span style='opacity:.6'>(необязательно)</span></label>"
+  + "<input type='text' id='company-name' placeholder='Например, ООО «Ромашка»' maxlength='80'></div>"
+  + "<div class='tariff-list'>"
+  + TARIFFS.map((t,i)=>"<label class='tariff-opt"+(i===0?" sel":"")+"'>"
+      + "<input type='radio' name='tariff' value='"+t.id+"'"+(i===0?" checked":"")+">"
+      + "<span class='nm'>"+t.name+"</span><span class='pr'>"+(t.price||"")+"</span></label>").join("")
+  + "</div>"
+  + "<div class='modal-actions'>"
+  + "<button class='btn-secondary' id='modal-cancel'>Отмена</button>"
+  + "<button class='btn-primary' id='modal-ok'>Сформировать документ</button>"
+  + "</div></div>";
+document.querySelector(".wrap").appendChild(modal);
+
+modal.querySelectorAll("input[name=tariff]").forEach(r=>{
+  r.addEventListener("change", ()=>{
+    modal.querySelectorAll(".tariff-opt").forEach(o=>o.classList.remove("sel"));
+    r.closest(".tariff-opt").classList.add("sel");
+  });
+});
+document.getElementById("dl-btn").addEventListener("click", ()=>{ modal.hidden = false; });
+document.getElementById("modal-cancel").addEventListener("click", ()=>{ modal.hidden = true; });
+modal.addEventListener("click", e=>{ if(e.target===modal) modal.hidden = true; });
+document.getElementById("modal-ok").addEventListener("click", ()=>{
+  const id = modal.querySelector("input[name=tariff]:checked").value;
+  const company = document.getElementById("company-name").value.trim();
+  modal.hidden = true;
+  openReport(TARIFFS.find(t=>t.id===id), company);
+});
+
+/* ---------- Пояснения «как считается» (всплывающее окно) ---------- */
+const INFO = {
+  1:"Сколько минут в день уходило на прослушивание звонков и заполнение карточек (звонков × минут), переводим в часы за месяц (× 22 рабочих дня) и умножаем на стоимость часа работы менеджера. Часть высвобожденного времени превращается в дополнительные продажи (доля × план).",
+  4:"Берём полную стоимость РОПа в месяц (оклад × 1,4) и умножаем на процент его времени, который раньше уходил на ручную проверку звонков. Эту работу берёт на себя ИИ.",
+  5:"Это дополнительная выручка, а не экономия: размер базы клиентов × конверсию в повторную продажу × средний чек сделки.",
+  3:"Сколько минут в день уходит на подготовку документов (документов × минут), переводим в часы за месяц и умножаем на стоимость часа работы. Итог — по всем сотрудникам, которые готовят документы.",
+  9:"Сколько рутинных операций в Битрикс24 сотрудник делает за день и сколько минут экономит на каждой. Переводим в часы за месяц и умножаем на стоимость часа. Итог — по всем сотрудникам.",
+  2:"Сколько обращений в день закрывает ИИ вместо специалиста и сколько минут уходило на одно обращение. Переводим в часы за месяц и умножаем на стоимость часа специалиста.",
+  10:"Сколько раз в день сотрудники ищут ответы и сколько минут на это уходило. Учитываем процент вопросов, на которые отвечает ИИ. Переводим в часы за месяц и умножаем на стоимость часа. Итог — по всем сотрудникам.",
+  11:"Сотрудники экономят время на планировании и сборе итога дня, руководители — на чтении отчётов. Минуты в день переводим в часы за месяц и умножаем на стоимость часа. Складываем эффект сотрудников и руководителей.",
+  12:"Экономия ФОТ: число обзвонов в месяц (записей × звонков на запись) × минуты на звонок, в часах × стоимость часа администратора. Плюс выручка от возвращённых неявок: записей × процент неявок × процент возвращённых × средний чек.",
+  6:"Транскрибация встреч даёт три эффекта: встречи короче на 15%, участников меньше на 15% и ассистент не тратит время на протокол. Каждый эффект — это минуты × число встреч × стоимость минуты; всё суммируется.",
+  7:"Полная стоимость сотрудника в месяц (оклад × 1,4) × процент прироста эффективности × число сотрудников.",
+  8:"Берём процент инициативных сотрудников от общего числа, умножаем на полную стоимость сотрудника (оклад × 1,4) и на процент упрощения их работы.",
+};
+const SUMMARY_INFO = "Складываем экономию ФОТ по всем выбранным сценариям и отдельно — прирост выручки. Их сумма — общий эффект. Годовые суммы = месячные × 12. Ниже сравниваем эффект за год со стоимостью подписки BitrixGPT. Стоимость часа работы = оклад на руки × 1,4 ÷ 176 рабочих часов.";
+
+const infoModal = document.createElement("div");
+infoModal.className = "modal-overlay"; infoModal.hidden = true;
+infoModal.innerHTML = "<div class='modal'>"
+  + "<button class='modal-x' id='info-x' aria-label='Закрыть'>×</button>"
+  + "<h3 id='info-title'>Как считается</h3>"
+  + "<p class='info-text' id='info-text'></p>"
+  + "<div class='modal-actions'><button class='btn-primary' id='info-ok'>Понятно</button></div>"
+  + "</div>";
+document.querySelector(".wrap").appendChild(infoModal);
+
+function openInfo(key){
+  const t = document.getElementById("info-title");
+  const x = document.getElementById("info-text");
+  if(key==="summary"){
+    t.textContent = "Как считается общий эффект";
+    x.textContent = SUMMARY_INFO;
+  } else {
+    const sc = scenarios.find(s=>String(s.id)===String(key));
+    t.textContent = sc ? "Как считается: " + sc.title : "Как считается";
+    x.textContent = INFO[key] || "";
+  }
+  infoModal.hidden = false;
+}
+function closeInfo(){ infoModal.hidden = true; }
+document.getElementById("info-x").addEventListener("click", closeInfo);
+document.getElementById("info-ok").addEventListener("click", closeInfo);
+infoModal.addEventListener("click", e=>{ if(e.target===infoModal) closeInfo(); });
+document.addEventListener("click", e=>{
+  const b = e.target.closest(".info-btn");
+  if(b) openInfo(b.dataset.info);
+});
+// иконка в статичные кнопки-«i» (итоговый блок)
+document.querySelectorAll(".info-btn:empty").forEach(b=> b.innerHTML = ICON_INFO);
+
+recompute();
+</script>
+</body>
+</html>
