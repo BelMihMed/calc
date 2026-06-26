@@ -150,6 +150,18 @@
   .res-row.total{border-top:1px dashed #d6e0ec;margin-top:6px;padding-top:10px;font-size:15px}
   .res-row.total .val{color:var(--b24-blue)}
   .res-row .val.rev{color:var(--b24-green)}
+  .res-row .val.cost{color:#b34a2f}
+  .res-row.int{border-top:1px dashed #d6e0ec;margin-top:6px;padding-top:10px}
+  .res-row.int .lbl{display:inline-flex;align-items:center;gap:5px}
+  .res-row.int .info-btn{padding:0}
+  .sum-grid .fullrow{grid-column:1/-1;display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14.5px}
+  .sum-grid .fullrow .lbl2{display:inline-flex;align-items:center;gap:6px}
+  .sum-grid .fullrow.int{opacity:.95}
+  .sum-grid .fullrow.int .v{color:#ffd0a8;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .sum-grid .fullrow.net{font-weight:700}
+  .sum-grid .fullrow.net .v{color:#9ff5c4;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .summary .fullrow .info-btn{color:rgba(255,255,255,.85)}
+  .summary .fullrow .info-btn:hover{color:#fff;background:rgba(255,255,255,.15)}
   .breakdown{font-size:12.5px;color:var(--b24-muted);margin:2px 0 8px;padding-left:2px}
   .breakdown div{padding:2px 0}
   .note{font-size:13px;color:#5a6b82;background:#fffaf0;border:1px solid #f3e6c4;border-radius:9px;padding:10px 13px;margin-top:12px}
@@ -708,7 +720,7 @@ function plural(n, forms){ // forms = [один, два, пять]
 
 /* ---------- Пересчёт ---------- */
 function recompute(){
-  let totalFot=0, totalRev=0, anySelected=false, showQual=false, selectedCount=0;
+  let totalFot=0, totalRev=0, totalInt=0, anySelected=false, showQual=false, selectedCount=0;
 
   scenarios.forEach(sc=>{
     const st = state[sc.id];
@@ -733,6 +745,8 @@ function recompute(){
     const r = sc.compute(st.values);
     const fotY = r.fot*12, revY = r.rev*12;
     totalFot += r.fot; totalRev += r.rev;
+    const intCost = integratorCost(sc);
+    totalInt += intCost;
 
     let rows = `<div class="res-head"><button class="info-btn" data-info="${sc.id}" aria-label="Как считается экономия">${ICON_INFO}</button></div>`;
     if(r.breakdown){
@@ -754,10 +768,11 @@ function recompute(){
       rows += `<div class="res-row total"><span class="lbl">Итого по сценарию, месяц</span><span class="val">${fmtMoney(totMonth)}</span></div>`;
       rows += `<div class="res-row total"><span class="lbl">Итого по сценарию, год</span><span class="val">${fmtMoney(totMonth*12)}</span></div>`;
     }
+    rows += `<div class="res-row int"><span class="lbl">Настройка от интегратора (разово) <button class="info-btn" data-info="int-${sc.id}" aria-label="О настройке от интегратора">${ICON_INFO}</button></span><span class="val cost">${fmtMoney(intCost)}</span></div>`;
     resEl.innerHTML = rows;
   });
 
-  renderSummary(totalFot, totalRev, anySelected, showQual);
+  renderSummary(totalFot, totalRev, anySelected, showQual, totalInt);
 
   // обновление панели навигации
   const cntEl = document.getElementById("nav-count");
@@ -775,8 +790,20 @@ function row(lbl,val,cls){
   return `<div class="res-row"><span class="lbl">${lbl}</span><span class="val ${cls||''}">${val}</span></div>`;
 }
 
+/* ---------- Настройка от интегратора ---------- */
+// поле-«количество сотрудников» в каждом блоке (для блоков без штата — базовая единица)
+const STAFF_KEY = {1:"mgr",4:"rop",3:"emp",2:"spec",9:"mgr",10:"emp",11:"emp",7:"emp",8:"emp",6:"part"};
+const INT_PER_UNIT = 20000;   // ₽ за каждые 5 сотрудников
+const INT_UNIT_STAFF = 5;
+function integratorCost(sc){
+  const key = STAFF_KEY[sc.id];
+  const staff = key ? (state[sc.id].values[key] || 0) : 1;
+  const units = Math.max(1, Math.ceil(staff / INT_UNIT_STAFF));
+  return units * INT_PER_UNIT;
+}
+
 /* ---------- Итоговый блок ---------- */
-function renderSummary(fot, rev, any, qual){
+function renderSummary(fot, rev, any, qual, integ){
   const el = document.getElementById("summary-body");
   document.getElementById("dl-btn").disabled = !any;
   if(!any){
@@ -785,7 +812,8 @@ function renderSummary(fot, rev, any, qual){
   }
   const grand = fot + rev;
   const grandYear = grand*12;
-  const ratio = grandYear / COST_YEAR;
+  const netYear = grandYear - integ;            // выгода 1-го года за вычетом разовой настройки
+  const ratio = netYear / COST_YEAR;
   const ratioTxt = ratio>=10 ? Math.round(ratio).toLocaleString("ru-RU")
                              : ratio.toFixed(1).replace(".",",");
   el.innerHTML = `
@@ -801,13 +829,18 @@ function renderSummary(fot, rev, any, qual){
       <div class="lbl row-total">Общий эффект BitrixGPT</div>
       <div class="num grand eco">${fmtMoney(grand)}</div>
       <div class="num grand eco year">${fmtMoney(grandYear)}</div>
+      <div class="fullrow int"><span class="lbl2">Настройка от интегратора (разово) <button class="info-btn" data-info="int-summary" aria-label="О настройке от интегратора">${ICON_INFO}</button></span><span class="v">− ${fmtMoney(integ)}</span></div>
+      <div class="sum-line"></div>
+      <div class="fullrow net"><span class="lbl2">Выгода за 1-й год за вычетом настройки</span><span class="v">${fmtMoney(netYear)}</span></div>
       <div class="lbl cost">Стоимость BitrixGPT</div>
       <div class="num cost">от ${fmtMoney(COST_YEAR/12)}</div>
       <div class="num cost year">от ${fmtMoney(COST_YEAR)}</div>
-      ${grand>0?`<div class="verdict">
+      ${netYear>0?`<div class="verdict">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-        <span>Экономия за год выгоднее стоимости BitrixGPT в <b>${ratioTxt}×</b></span>
-      </div>`:''}
+        <span>Выгода за 1-й год за вычетом настройки выгоднее стоимости BitrixGPT в <b>${ratioTxt}×</b></span>
+      </div>`:`<div class="verdict" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25)">
+        <span>За 1-й год выгода пока не покрывает разовую настройку — увеличьте охват или число сценариев.</span>
+      </div>`}
     </div>
     ${qual?`<div class="qual">После работы активных сотрудников бизнес-процессы компании в среднем ускоряются и повышают эффективность на ~20%.</div>`:''}
   `;
@@ -1002,6 +1035,22 @@ const INFO = {
 };
 const SUMMARY_INFO = "Складываем экономию ФОТ по всем выбранным сценариям и отдельно — прирост выручки. Их сумма — общий эффект. Годовые суммы = месячные × 12. Ниже сравниваем эффект за год со стоимостью подписки BitrixGPT. Стоимость часа работы = оклад на руки × 1,4 ÷ 176 рабочих часов.";
 
+const INTEGRATOR_INFO = {
+  1:"Интегратор настроит распознавание звонков и привязку расшифровок к карточкам сделок под вашу телефонию и воронки. Поможет задать, какие поля карточки заполнять автоматически, и обучит менеджеров работать с резюме звонка. Стоимость зависит от числа менеджеров, которых нужно подключить и обучить.",
+  4:"Интегратор поможет описать ваш скрипт продаж и критерии оценки, по которым ИИ будет проверять звонки. Настроит отчёты для РОПа и научит читать оценку и давать обратную связь команде. Объём услуг зависит от числа РОПов и сложности скриптов.",
+  5:"Интегратор настроит сегментацию базы и сценарии повторных касаний под ваш продукт и цикл сделки. Поможет задать триггеры и тексты предложений, подключит аналитику конверсии. Это разовая адаптация под вашу базу клиентов.",
+  3:"Интегратор подготовит шаблоны документов (КП, договоры, письма, счета) с подстановкой данных из CRM. Настроит стиль и обязательные блоки под ваши требования и обучит сотрудников генерировать документы быстро. Стоимость зависит от числа сотрудников, готовящих документы.",
+  2:"Интегратор подключит открытые линии и каналы, наполнит базу знаний ответами и настроит правила передачи сложных кейсов оператору. Опишет, какие данные собирать из диалога в карточку, и обучит команду поддержки. Объём зависит от числа специалистов и каналов.",
+  9:"Интегратор настроит голосового агента под ваши процессы в CRM, задачах, смарт-процессах и на Диске, с учётом прав доступа. Поможет составить частые команды и обучит сотрудников. Стоимость зависит от числа сотрудников, которых нужно подключить.",
+  10:"Интегратор поможет собрать и структурировать базу знаний из ваших регламентов и инструкций. Настроит агента, проверит качество ответов и научит сотрудников задавать вопросы и пополнять базу. Объём зависит от числа пользователей и количества документов.",
+  11:"Интегратор настроит утренний план дня и вечерний итог под ваши задачи и календарь, а руководителям — сводный отчёт по команде. Согласует формат и расписание уведомлений. Стоимость зависит от числа сотрудников, которым подключают ассистента.",
+  12:"Интегратор подключит голосового агента к вашей онлайн-записи и телефонии, настроит сценарии подтверждения, напоминаний и реакции на неявку. Опишет, как сохранять исход звонка в карточке, и проверит на ваших записях. Это разовая настройка под вашу запись.",
+  6:"Интегратор настроит транскрибацию встреч и автоматическое резюме под ваши форматы совещаний. Поможет задать, кому отправлять итоги и какие задачи ставить по результатам. Объём зависит от числа участников встреч.",
+  7:"Интегратор проведёт онбординг сотрудников по работе с BitrixGPT: типовые сценарии, подсказки, генерация текстов. Настроит доступы и соберёт набор полезных команд под ваши задачи. Стоимость зависит от числа сотрудников на портале.",
+  8:"Интегратор поможет инициативным сотрудникам освоить vibe-coding: настроит окружение и покажет, как автоматизировать рутину и процессы отдела. Сопроводит первые сценарии до результата. Объём зависит от общего числа сотрудников, из которых выбираются инициативные.",
+};
+const INTEGRATOR_SUMMARY = "Это разовая стоимость услуг интегратора по всем выбранным сценариям: подключение, настройка под ваши процессы и обучение сотрудников. Сумма ориентировочная — пока считается от числа сотрудников в блоке (каждые 5 сотрудников — 20 000 ₽). Эти затраты вычитаются из выгоды первого года перед сравнением со стоимостью подписки.";
+
 const infoModal = document.createElement("div");
 infoModal.className = "modal-overlay"; infoModal.hidden = true;
 infoModal.innerHTML = "<div class='modal'>"
@@ -1018,6 +1067,14 @@ function openInfo(key){
   if(key==="summary"){
     t.textContent = "Как считается общий эффект";
     x.textContent = SUMMARY_INFO;
+  } else if(key==="int-summary"){
+    t.textContent = "Настройка от интегратора";
+    x.textContent = INTEGRATOR_SUMMARY;
+  } else if(String(key).indexOf("int-")===0){
+    const id = String(key).slice(4);
+    const sc = scenarios.find(s=>String(s.id)===id);
+    t.textContent = sc ? "Настройка от интегратора: " + sc.title : "Настройка от интегратора";
+    x.textContent = INTEGRATOR_INFO[id] || "";
   } else {
     const sc = scenarios.find(s=>String(s.id)===String(key));
     t.textContent = sc ? "Как считается: " + sc.title : "Как считается";
