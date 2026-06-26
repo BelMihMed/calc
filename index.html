@@ -870,56 +870,76 @@ function buildReportHtml(tariff, company){
   const ratio = costYear>0 ? grandYear/costYear : 0;
   const ratioTxt = ratio>=10 ? Math.round(ratio).toLocaleString("ru-RU") : ratio.toFixed(1).replace(".",",");
 
-  const rows = items.map(it=>{
-    const params = it.params.map(p=>p.label+": <b>"+p.val+"</b>").join(" · ");
+  const cards = items.map(it=>{
+    const num2 = String(it.num).padStart(2,"0");
+    const chips = it.params.map(p=>"<span class='chip'>"+p.label+": <b>"+p.val+"</b></span>").join("");
     let eff="";
-    if(it.effect.includes("fot")) eff += "<div>Экономия ФОТ: <b>"+fmtMoney(it.fot)+"</b>/мес · "+fmtMoney(it.fot*12)+"/год</div>";
-    if(it.effect.includes("rev")) eff += "<div class='rev'>Прирост выручки: <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
-    return "<tr><td class='n'>"+it.num+"</td><td><div class='ti'>"+it.title+"</div><div class='pa'>"+params+"</div></td><td class='ef'>"+eff+"</td></tr>";
+    if(it.effect.includes("fot")) eff += "<div class='fot'>Экономия ФОТ — <b>"+fmtMoney(it.fot)+"</b>/мес · "+fmtMoney(it.fot*12)+"/год</div>";
+    if(it.effect.includes("rev")) eff += "<div class='rev'>Прирост выручки — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
+    return "<div class='card'><div class='chead'><span class='cnum'>"+num2+"</span><span class='ctitle'>"+it.title+"</span></div>"
+      + "<div class='cparams'>"+chips+"</div><div class='ceff'>"+eff+"</div></div>";
   }).join("");
 
+  const GRAD = "linear-gradient(95deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,56%),hsl(195,80%,50%),hsl(175,65%,46%),hsl(160,60%,46%))";
+
   return "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'>"
-    + "<title>Эффект от внедрения BitrixGPT</title><style>"
-    + "@page{margin:16mm 14mm}"
-    + "*{box-sizing:border-box}"
-    + "body{font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#1c2a3a;font-size:12.5px;line-height:1.5;margin:0;padding:26px}"
-    + ".hd{background:linear-gradient(135deg,#2067b0,#15a9e1);color:#fff;border-radius:12px;padding:20px 22px;margin-bottom:16px}"
-    + ".hd .co{font-size:13px;font-weight:600;opacity:.95;margin-bottom:6px}"
-    + ".hd h1{margin:0 0 4px;font-size:20px}"
-    + ".hd .d{opacity:.9;font-size:12px}"
-    + ".intro{font-size:13px;color:#33455c;margin:0 0 16px}"
-    + "table{width:100%;border-collapse:collapse;margin-bottom:18px}"
-    + "th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:#7a8aa0;border-bottom:2px solid #e3e9f1;padding:6px 8px}"
-    + "td{border-bottom:1px solid #eef2f7;padding:9px 8px;vertical-align:top}"
-    + "td.n{color:#7a8aa0;width:24px}td.ef{text-align:right;white-space:nowrap}"
-    + ".ti{font-weight:600;font-size:13px}.pa{color:#7a8aa0;font-size:11.5px;margin-top:3px}"
-    + ".ef .rev{color:#1fa463}.ef b{color:#2067b0}.ef .rev b{color:#1fa463}"
-    + ".tot{width:100%;border-collapse:collapse;background:#f7fafd;border:1px solid #e3e9f1;border-radius:10px;overflow:hidden}"
-    + ".tot td{padding:9px 14px;border-bottom:1px solid #e9eef5}"
-    + ".tot .lbl{color:#5a6b82}.tot .v{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}"
-    + ".tot .grand td{font-size:15px;font-weight:800;background:#eaf3fc}.tot .grand .v{color:#2067b0}"
-    + ".tot .cost .v{color:#b34a2f}"
-    + ".verdict{margin-top:14px;background:#e8f6ef;border:1px solid #b9e6cd;border-radius:10px;padding:12px 15px;font-size:13.5px}"
-    + ".verdict b{color:#1fa463;font-size:15px}"
-    + ".rec{margin-top:12px;background:#fff7ec;border:1px solid #f4dcb8;border-radius:10px;padding:12px 15px;font-size:13px;color:#7a5a1f}"
-    + ".ft{margin-top:18px;color:#9aa7b8;font-size:10.5px;border-top:1px solid #eef2f7;padding-top:10px}"
-    + "@media print{.noprint{display:none}body{padding:0}}"
-    + ".noprint{margin-top:18px;text-align:center}.noprint button{font:inherit;font-size:14px;font-weight:700;background:#2067b0;color:#fff;border:0;border-radius:9px;padding:11px 22px;cursor:pointer}"
+    + "<title>Экономический эффект BitrixGPT</title>"
+    + "<link rel='preconnect' href='https://fonts.googleapis.com'><link rel='preconnect' href='https://fonts.gstatic.com' crossorigin>"
+    + "<link href='https://fonts.googleapis.com/css2?family=Unbounded:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap' rel='stylesheet'>"
+    + "<style>"
+    + "*{box-sizing:border-box}@page{margin:13mm 12mm}"
+    + "body{font-family:Manrope,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#15151b;font-size:13px;line-height:1.55;margin:0;padding:30px 30px 24px;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
+    + ".spectrum{height:5px;border-radius:3px;margin-bottom:22px;background:linear-gradient(90deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,58%),hsl(195,80%,52%),hsl(175,65%,48%),hsl(160,60%,48%))}"
+    + ".eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin:0 0 10px}"
+    + ".co{font-weight:700;font-size:14px;margin:0 0 6px;color:#15151b}"
+    + ".wordmark{font-family:Unbounded,Manrope,sans-serif;font-weight:800;font-size:33px;line-height:1.1;letter-spacing:-.01em;margin:0;padding-bottom:.06em;background:"+GRAD+";-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;margin:10px 0 0}"
+    + ".lede{color:#6b6b78;font-size:14.5px;max-width:72ch;margin:16px 0 26px}"
+    + ".sec-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin:0 0 12px}"
+    + ".card{border:1px solid #ececef;border-radius:14px;padding:15px 17px;margin-bottom:11px;break-inside:avoid}"
+    + ".chead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}"
+    + ".cnum{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;font-weight:500}"
+    + ".ctitle{font-weight:800;font-size:15px;letter-spacing:-.01em}"
+    + ".cparams{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}"
+    + ".chip{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#3a3a44;background:#fafafb;border:1px solid #ececef;border-radius:8px;padding:4px 9px}"
+    + ".chip b{color:#15151b}"
+    + ".ceff{display:flex;flex-direction:column;gap:3px;font-size:13px;border-top:1px solid #ececef;padding-top:10px}"
+    + ".ceff b{font-weight:800}.ceff .fot b{color:hsl(220,82%,50%)}.ceff .rev{color:hsl(160,55%,38%)}.ceff .rev b{color:hsl(160,55%,36%)}"
+    + ".tot{border:1px solid #ececef;border-radius:16px;overflow:hidden;break-inside:avoid;margin-top:6px}"
+    + ".trow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:12px 18px;border-bottom:1px solid #ececef}"
+    + ".trow .tv{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}"
+    + ".trow.cost .tv{color:hsl(18,70%,45%)}"
+    + ".grand{padding:18px;background:#fafafb;border-bottom:1px solid #ececef;text-align:center;break-inside:avoid}"
+    + ".grand .gl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin-bottom:8px}"
+    + ".grand .gnum{font-family:Unbounded,sans-serif;font-weight:800;font-size:40px;line-height:1;letter-spacing:-.02em;background:linear-gradient(95deg,hsl(265,75%,58%),hsl(220,82%,56%),hsl(160,60%,46%));-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".grand .gm{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6b6b78;margin-top:9px}"
+    + ".verdict{display:flex;align-items:center;gap:10px;padding:14px 18px;background:hsl(160,55%,96%);font-size:14px;font-weight:600}"
+    + ".verdict .vb{font-family:Unbounded,sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,hsl(175,65%,42%),hsl(160,60%,42%));-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".verdict svg{width:20px;height:20px;color:hsl(160,60%,44%);flex:none}"
+    + ".rec{margin-top:12px;border:1px dashed #d8d8de;border-radius:12px;padding:13px 16px;font-size:13px;color:#6b6b78}"
+    + ".ft{margin-top:22px;color:#9a9aa6;font-size:10.5px;border-top:1px solid #ececef;padding-top:12px}"
+    + ".noprint{margin-top:24px;text-align:center}"
+    + ".noprint button{font-family:Manrope,sans-serif;font-size:14px;font-weight:800;color:#fff;border:0;border-radius:10px;padding:12px 26px;cursor:pointer;background:linear-gradient(95deg,hsl(245,80%,60%),hsl(195,80%,50%))}"
+    + "@media print{.noprint{display:none}body{padding:0}.spectrum{margin-bottom:18px}}"
     + "</style></head><body>"
-    + "<div class='hd'>"+companyLine+"<h1>Эффект от внедрения BitrixGPT в Битрикс24</h1><div class='d'>Отчёт сформирован "+dateStr+"</div></div>"
-    + "<p class='intro'>"+intro+"</p>"
-    + "<table><thead><tr><th>#</th><th>Сценарий и параметры</th><th style='text-align:right'>Эффект</th></tr></thead><tbody>"+rows+"</tbody></table>"
-    + "<table class='tot'>"
-    + "<tr><td class='lbl'>Суммарная экономия ФОТ</td><td class='v'>"+fmtMoney(totalFot)+"/мес</td><td class='v'>"+fmtMoney(totalFot*12)+"/год</td></tr>"
-    + "<tr><td class='lbl'>Суммарный прирост выручки</td><td class='v'>"+fmtMoney(totalRev)+"/мес</td><td class='v'>"+fmtMoney(totalRev*12)+"/год</td></tr>"
-    + "<tr class='grand'><td>Общий эффект BitrixGPT</td><td class='v'>"+fmtMoney(grand)+"/мес</td><td class='v'>"+fmtMoney(grandYear)+"/год</td></tr>"
-    + "<tr class='cost'><td class='lbl'>"+costName+"</td><td class='v'>"+costPrefix+fmtMoney(costYear/12)+"/мес</td><td class='v'>"+costPrefix+fmtMoney(costYear)+"/год</td></tr>"
-    + "</table>"
-    + "<div class='verdict'>"+verdictTxt+" <b>"+ratioTxt+"×</b></div>"
+    + "<div class='spectrum'></div>"
+    + "<header>"+companyLine+"<p class='eyebrow'>Bitrix24 · BitrixGPT · Экономический эффект</p>"
+    + "<h1 class='wordmark'>Сколько сэкономит BitrixGPT</h1>"
+    + "<div class='meta'>Отчёт сформирован "+dateStr+" · тариф «"+tariff.name+"»</div>"
+    + "<p class='lede'>"+intro+"</p></header>"
+    + "<section><p class='sec-eyebrow'>Выбранные сценарии</p>"+cards+"</section>"
+    + "<section style='margin-top:24px'><p class='sec-eyebrow'>Итог</p><div class='tot'>"
+    + "<div class='trow'><span>Суммарная экономия ФОТ</span><span class='tv'>"+fmtMoney(totalFot)+"/мес · "+fmtMoney(totalFot*12)+"/год</span></div>"
+    + "<div class='trow'><span>Суммарный прирост выручки</span><span class='tv'>"+fmtMoney(totalRev)+"/мес · "+fmtMoney(totalRev*12)+"/год</span></div>"
+    + "<div class='grand'><div class='gl'>Общий эффект BitrixGPT за год</div><div class='gnum'>"+fmtMoney(grandYear)+"</div><div class='gm'>"+fmtMoney(grand)+" / мес</div></div>"
+    + "<div class='trow cost'><span>"+costName+"</span><span class='tv'>"+costPrefix+fmtMoney(costYear)+"/год · "+costPrefix+fmtMoney(costYear/12)+"/мес</span></div>"
+    + "<div class='verdict'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg><span>"+verdictTxt+" <span class='vb'>"+ratioTxt+"×</span></span></div>"
+    + "</div>"
     + (recommend ? "<div class='rec'>"+recommend+"</div>" : "")
-    + "<div class='ft'>Расчёт носит оценочный характер. Налоговая модель упрощённая (оклад на руки × 1,4). Цены подписки BitrixGPT приведены при оплате за год.</div>"
+    + "</section>"
+    + "<div class='ft'>Расчёт носит оценочный характер. Налоговая модель упрощённая (оклад на руки × 1,4); стоимость часа = оклад × 1,4 ÷ 176. Цены подписки BitrixGPT приведены при оплате за год.</div>"
     + "<div class='noprint'><button onclick='window.print()'>Печать / Сохранить в PDF</button></div>"
-    + "<scr"+"ipt>window.onload=function(){setTimeout(function(){window.print();},350);};</scr"+"ipt>"
+    + "<scr"+"ipt>(function(){function go(){window.print();}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(go,200);});setTimeout(go,1600);}else{window.onload=function(){setTimeout(go,400);};}})();</scr"+"ipt>"
     + "</body></html>";
 }
 
