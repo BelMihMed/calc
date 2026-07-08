@@ -349,6 +349,8 @@
 "use strict";
 
 /* ---------- Базовые константы и формулы (Глоссарий) ---------- */
+const HIDE_REVENUE = true;   // временно скрыть «Прирост выручки»; false — вернуть. «Потенциал базы» не затрагивает
+function revShown(sc){ return !HIDE_REVENUE || sc.revLabel==="Потенциал базы"; }
 const TAX = 1.4;          // налоговая нагрузка
 const HOURS_MONTH = 176;  // рабочих часов в месяце
 const DAYS_MONTH = 22;    // рабочих дней в месяце
@@ -673,7 +675,7 @@ scenarios.forEach((sc, idx)=>{
 
   const tags = sc.effect.map(e=> e==="fot"
     ? '<span class="tag fot">Экономия ФОТ</span>'
-    : `<span class="tag rev">${sc.revLabel||"Прирост выручки"}</span>`).join("")
+    : (revShown(sc) ? `<span class="tag rev">${sc.revLabel||"Прирост выручки"}</span>` : "")).join("")
     + `<span class="tag role">${sc.role}</span>`;
 
   const more = sc.link
@@ -859,8 +861,9 @@ function recompute(){
 
     const r = computeScenario(sc, st);
     const fotY = r.fot*12, revY = r.rev*12;
+    const showRev = revShown(sc);
     totalFot += r.fot;
-    if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else totalRev += r.rev;
+    if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else if(showRev) totalRev += r.rev;
     const intCost = integratorCost(sc);
     totalInt += intCost;
 
@@ -875,13 +878,13 @@ function recompute(){
       rows += row("Экономия ФОТ, месяц", fmtMoney(r.fot));
       rows += row("Экономия ФОТ, год", fmtMoney(fotY));
     }
-    if(sc.effect.includes("rev")){
+    if(sc.effect.includes("rev") && showRev){
       const rl = sc.revLabel || "Прирост выручки";
       rows += row(rl+", месяц", fmtMoney(r.rev), "rev");
       rows += row(rl+", год", fmtMoney(revY), "rev");
     }
-    const totMonth = r.fot + r.rev;
-    if(sc.effect.length>1){
+    const totMonth = r.fot + (showRev ? r.rev : 0);
+    if(sc.effect.includes("fot") && sc.effect.includes("rev") && showRev){
       rows += `<div class="res-row total"><span class="lbl">Итого по сценарию, месяц</span><span class="val">${fmtMoney(totMonth)}</span></div>`;
       rows += `<div class="res-row total"><span class="lbl">Итого по сценарию, год</span><span class="val">${fmtMoney(totMonth*12)}</span></div>`;
     }
@@ -936,9 +939,9 @@ function renderSummary(fot, rev, pot, any, qual, integ){
       <div class="lbl">Суммарная экономия ФОТ</div>
       <div class="num">${fmtMoney(fot)}</div>
       <div class="num year">${fmtMoney(fot*12)}</div>
-      <div class="lbl">Суммарный прирост выручки</div>
+      ${rev>0?`<div class="lbl">Суммарный прирост выручки</div>
       <div class="num">${fmtMoney(rev)}</div>
-      <div class="num year">${fmtMoney(rev*12)}</div>
+      <div class="num year">${fmtMoney(rev*12)}</div>`:''}
       ${pot>0?`<div class="lbl">Раскрытый потенциал базы</div>
       <div class="num">${fmtMoney(pot)}</div>
       <div class="num year">${fmtMoney(pot*12)}</div>`:''}
@@ -985,7 +988,7 @@ function collectResults(){
     if(!st.selected) return;
     const r = computeScenario(sc, st);
     totalFot += r.fot;
-    if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else totalRev += r.rev;
+    if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else if(revShown(sc)) totalRev += r.rev;
     if(typeof integratorCost==="function") totalInt += integratorCost(sc);   // услуги (только в serv)
     items.push({
       num: idx+1, title: sc.title, effect: sc.effect, revLabel: sc.revLabel, fot: r.fot, rev: r.rev,
@@ -1042,7 +1045,7 @@ function buildReportHtml(tariff, company){
     const chips = it.params.map(p=>"<span class='chip'>"+p.label+": <b>"+p.val+"</b></span>").join("");
     let eff="";
     if(it.effect.includes("fot")) eff += "<div class='fot'>Экономия ФОТ — <b>"+fmtMoney(it.fot)+"</b>/мес · "+fmtMoney(it.fot*12)+"/год</div>";
-    if(it.effect.includes("rev")) eff += "<div class='rev'>"+revName(it)+" — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
+    if(it.effect.includes("rev") && (it.revLabel==="Потенциал базы" || !HIDE_REVENUE)) eff += "<div class='rev'>"+revName(it)+" — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
     return "<div class='card'><div class='chead'><span class='cnum'>"+num2+"</span><span class='ctitle'>"+it.title+"</span></div>"
       + "<div class='cparams'>"+chips+"</div><div class='ceff'>"+eff+"</div></div>";
   }).join("");
