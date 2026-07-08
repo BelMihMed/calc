@@ -1229,7 +1229,7 @@ document.getElementById("modal-ok").addEventListener("click", ()=>{
 
 /* ---------- Пояснения «как считается» (всплывающее окно) ---------- */
 const INFO = {
-  1:"Сколько минут в день уходило на прослушивание звонков и заполнение карточек (звонков × минут), переводим в часы за месяц (× 22 рабочих дня) и умножаем на стоимость часа работы менеджера. Часть высвобожденного времени превращается в дополнительные продажи (доля × план).",
+  1:"Сколько минут в день уходило на прослушивание звонков и заполнение карточек (звонков × минут), переводим в часы за месяц (× 22 рабочих дня) и умножаем на стоимость часа работы менеджера.",
   4:"Берём полную стоимость РОПа в месяц (оклад × 1,4) и умножаем на процент его времени, который раньше уходил на ручную проверку звонков. Эту работу берёт на себя ИИ.",
   5:"Это дополнительная выручка, а не экономия: размер базы клиентов × конверсию в повторную продажу × средний чек сделки.",
   3:"Сколько минут в день уходит на подготовку документов (документов × минут), переводим в часы за месяц и умножаем на стоимость часа работы. Итог — по всем сотрудникам, которые готовят документы.",
@@ -1300,20 +1300,21 @@ function openDrawerText(title, text){
 }
 drawer.querySelector("#drawer-x").addEventListener("click", closeDrawer);
 drawer.addEventListener("click", e=>{ if(e.target===drawer) closeDrawer(); });
-document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDrawer(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape"){ closeDrawer(); infoModal.hidden = true; } });
 
 function openInfo(key){
-  if(key==="summary"){ openDrawerText("Как считается общий эффект", SUMMARY_INFO); return; }
-  if(key==="int-summary"){ openDrawerText("Настройка от интегратора", INTEGRATOR_SUMMARY); return; }
-  if(String(key).indexOf("int-")===0){
-    const id = String(key).slice(4);
-    const scn = scenarios.find(s=>String(s.id)===id);
-    openDrawerText(scn ? "Настройка от интегратора: " + scn.title : "Настройка от интегратора", INTEGRATOR_INFO[id] || "");
-    return;
-  }
-  const sc = scenarios.find(s=>String(s.id)===String(key));
-  openDrawerText(sc ? "Как считается: " + sc.title : "Как считается", INFO[key] || "");
+  const t = document.getElementById("info-title");
+  const x = document.getElementById("info-text");
+  if(key==="summary"){ t.textContent = "Как считается общий эффект"; x.textContent = SUMMARY_INFO; }
+  else if(key==="int-summary"){ t.textContent = "Настройка от интегратора"; x.textContent = INTEGRATOR_SUMMARY; }
+  else if(String(key).indexOf("int-")===0){ const id = String(key).slice(4); const scn = scenarios.find(s=>String(s.id)===id); t.textContent = scn ? "Настройка от интегратора: " + scn.title : "Настройка от интегратора"; x.textContent = INTEGRATOR_INFO[id] || ""; }
+  else { const sc = scenarios.find(s=>String(s.id)===String(key)); t.textContent = sc ? "Как считается: " + sc.title : "Как считается"; x.textContent = INFO[key] || ""; }
+  infoModal.hidden = false;
 }
+function closeInfo(){ infoModal.hidden = true; }
+document.getElementById("info-x").addEventListener("click", closeInfo);
+document.getElementById("info-ok").addEventListener("click", closeInfo);
+infoModal.addEventListener("click", e=>{ if(e.target===infoModal) closeInfo(); });
 
 // клики: ссылка «Подробнее» → слайдер с лендингом; иконка «i» → слайдер с пояснением
 document.addEventListener("click", e=>{
