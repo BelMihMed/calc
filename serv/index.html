@@ -979,56 +979,87 @@ function fieldDisplay(f, val){
 }
 
 function collectResults(){
-  const items=[]; let totalFot=0, totalRev=0;
+  const items=[]; let totalFot=0, totalRev=0, totalPot=0, totalInt=0;
   scenarios.forEach((sc, idx)=>{
     const st = state[sc.id];
     if(!st.selected) return;
     const r = computeScenario(sc, st);
-    totalFot += r.fot; totalRev += r.rev;
+    totalFot += r.fot;
+    if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else totalRev += r.rev;
+    if(typeof integratorCost==="function") totalInt += integratorCost(sc);   // услуги (только в serv)
     items.push({
-      num: idx+1, title: sc.title, effect: sc.effect, fot: r.fot, rev: r.rev,
+      num: idx+1, title: sc.title, effect: sc.effect, revLabel: sc.revLabel, fot: r.fot, rev: r.rev,
       params: sc.fields.map(f=>({label:f.label, val:fieldDisplay(f, st.values[f.k])})),
     });
   });
-  return {items, totalFot, totalRev};
+  return {items, totalFot, totalRev, totalPot, totalInt};
+}
+
+// данные о компании из верхнего блока
+function collectCompany(){
+  const map = {empCount:["Сотрудников всего","чел."], empSal:["Средняя ЗП","₽/мес"],
+    mgrCount:["Менеджеров по продажам","чел."], mgrSal:["ЗП менеджера","₽/мес"],
+    ropCount:["РОПов","чел."], ropSal:["ЗП РОПа","₽/мес"]};
+  const out=[];
+  document.querySelectorAll(".comp-in").forEach(inp=>{
+    const m = map[inp.dataset.comp]; if(!m) return;
+    const v = parseNum(inp.value);
+    if(v>0) out.push({label:m[0], val: groupFmt(String(v)) + " " + m[1]});
+  });
+  return out;
 }
 
 function buildReportHtml(tariff, company){
-  const {items, totalFot, totalRev} = collectResults();
-  const grand = totalFot + totalRev, grandYear = grand*12;
+  const {items, totalFot, totalRev, totalPot, totalInt} = collectResults();
+  const comp = collectCompany();
+  const grand = totalFot + totalRev + totalPot, grandYear = grand*12;
   const dateStr = new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});
   const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
   const companyLine = company ? "<div class='co'>"+esc(company)+"</div>" : "";
   const special = (tariff.variant==="free" || tariff.variant==="none");
 
-  let costYear, costName, intro, verdictTxt, recommend="";
+  // для бесплатного / нет Битрикс24 считаем тариф Профессиональный
+  let costYear, costName, recommend="";
   if(special){
-    costYear = 9600;
-    costName = "Подписка BitrixGPT — тариф «Базовый» (минимальный платный)";
-    intro = tariff.variant==="free"
-      ? "Вы используете бесплатный тариф Битрикс24. ИИ-инструменты BitrixGPT подключаются на платных тарифах — от 9 600 ₽/год (тариф «Базовый»). Ниже — эффект, который вы получите после перехода."
-      : "У вас пока нет Битрикс24. Ниже — ваш потенциальный экономический эффект от внедрения BitrixGPT. Подписка начинается от 9 600 ₽/год (тариф «Базовый»); у Битрикс24 есть и бесплатный стартовый тариф.";
-    verdictTxt = "Потенциальная экономия за год окупает минимальную подписку в";
-    recommend = "Рекомендуемый следующий шаг: подключить BitrixGPT на платном тарифе — по расчёту окупаемость наступает уже в первый год.";
+    costYear = 57600;
+    costName = "Подписка BitrixGPT — тариф «Профессиональный»";
+    recommend = tariff.variant==="free"
+      ? "На бесплатном тарифе Битрикс24 ИИ-агенты BitrixGPT недоступны. Для их подключения нужен платный тариф от «Профессионального» (57 600 ₽/год) — расчёт выше сделан по нему."
+      : "У вас пока нет Битрикс24. Для ИИ-агентов BitrixGPT нужен тариф от «Профессионального» (57 600 ₽/год) — расчёт выше сделан по нему.";
   } else {
     costYear = tariff.costYear;
     costName = "Подписка BitrixGPT — тариф «" + tariff.name + "»";
-    intro = "Ваш текущий тариф Битрикс24 — «" + tariff.name + "». Ниже — расчёт экономического эффекта от внедрения BitrixGPT и сравнение со стоимостью подписки.";
-    verdictTxt = "Экономия за год выгоднее стоимости подписки в";
   }
-  const costPrefix = (tariff.from || special) ? "от " : "";
-  const ratio = costYear>0 ? grandYear/costYear : 0;
+  const costPrefix = tariff.from ? "от " : "";
+  const costs1 = costYear + totalInt;          // затраты 1-го года: подписка + разовые услуги
+  const net1 = grandYear - costs1;
+  const ratio = costs1>0 ? grandYear/costs1 : 0;
   const ratioTxt = ratio>=10 ? Math.round(ratio).toLocaleString("ru-RU") : ratio.toFixed(1).replace(".",",");
 
+  const revName = it => (it.revLabel || "Прирост выручки");
   const cards = items.map(it=>{
     const num2 = String(it.num).padStart(2,"0");
     const chips = it.params.map(p=>"<span class='chip'>"+p.label+": <b>"+p.val+"</b></span>").join("");
     let eff="";
     if(it.effect.includes("fot")) eff += "<div class='fot'>Экономия ФОТ — <b>"+fmtMoney(it.fot)+"</b>/мес · "+fmtMoney(it.fot*12)+"/год</div>";
-    if(it.effect.includes("rev")) eff += "<div class='rev'>Прирост выручки — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
+    if(it.effect.includes("rev")) eff += "<div class='rev'>"+revName(it)+" — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
     return "<div class='card'><div class='chead'><span class='cnum'>"+num2+"</span><span class='ctitle'>"+it.title+"</span></div>"
       + "<div class='cparams'>"+chips+"</div><div class='ceff'>"+eff+"</div></div>";
   }).join("");
+
+  const coChips = comp.length
+    ? "<div class='co-grid'>" + comp.map(c=>"<div class='co-chip'>"+c.label+": <b>"+c.val+"</b></div>").join("") + "</div>"
+    : "<div class='co-empty'>Данные о компании не заполнены.</div>";
+
+  // строки расшифровки эффекта
+  let effRows = "<div class='trow'><span>Экономия ФОТ</span><span class='tv'>"+fmtMoney(totalFot)+"/мес · "+fmtMoney(totalFot*12)+"/год</span></div>";
+  if(totalRev>0) effRows += "<div class='trow'><span>Прирост выручки</span><span class='tv'>"+fmtMoney(totalRev)+"/мес · "+fmtMoney(totalRev*12)+"/год</span></div>";
+  if(totalPot>0) effRows += "<div class='trow'><span>Раскрытый потенциал базы</span><span class='tv'>"+fmtMoney(totalPot)+"/мес · "+fmtMoney(totalPot*12)+"/год</span></div>";
+
+  // строки затрат
+  let costRows = "<div class='trow'><span>"+costName+"</span><span class='tv'>"+costPrefix+fmtMoney(costYear)+"/год</span></div>";
+  if(totalInt>0) costRows += "<div class='trow'><span>Настройка от интегратора (разово)</span><span class='tv'>"+fmtMoney(totalInt)+"</span></div>";
+  costRows += "<div class='trow total'><span>Итого затрат 1-го года</span><span class='tv'>"+costPrefix+fmtMoney(costs1)+"</span></div>";
 
   const GRAD = "linear-gradient(95deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,56%),hsl(195,80%,50%),hsl(175,65%,46%),hsl(160,60%,46%))";
 
@@ -1039,13 +1070,28 @@ function buildReportHtml(tariff, company){
     + "<style>"
     + "*{box-sizing:border-box}@page{margin:13mm 12mm}"
     + "body{font-family:Manrope,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#15151b;font-size:13px;line-height:1.55;margin:0;padding:30px 30px 24px;-webkit-print-color-adjust:exact;print-color-adjust:exact}"
-    + ".spectrum{height:5px;border-radius:3px;margin-bottom:22px;background:linear-gradient(90deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,58%),hsl(195,80%,52%),hsl(175,65%,48%),hsl(160,60%,48%))}"
+    + ".spectrum{height:5px;border-radius:3px;margin-bottom:20px;background:linear-gradient(90deg,hsl(265,75%,60%),hsl(245,80%,60%),hsl(220,82%,58%),hsl(195,80%,52%),hsl(175,65%,48%),hsl(160,60%,48%))}"
     + ".eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin:0 0 10px}"
     + ".co{font-weight:700;font-size:14px;margin:0 0 6px;color:#15151b}"
-    + ".wordmark{font-family:Unbounded,Manrope,sans-serif;font-weight:800;font-size:33px;line-height:1.1;letter-spacing:-.01em;margin:0;padding-bottom:.06em;background:"+GRAD+";-webkit-background-clip:text;background-clip:text;color:transparent}"
-    + ".meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;margin:10px 0 0}"
-    + ".lede{color:#6b6b78;font-size:14.5px;max-width:72ch;margin:16px 0 26px}"
+    + ".wordmark{font-family:Unbounded,Manrope,sans-serif;font-weight:800;font-size:30px;line-height:1.1;letter-spacing:-.01em;margin:0;padding-bottom:.06em;background:"+GRAD+";-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".meta{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;margin:10px 0 22px}"
     + ".sec-eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin:0 0 12px}"
+    + "section{margin-bottom:26px}"
+    // герой-эффект
+    + ".hero{border:1px solid #e6e6ee;border-radius:20px;padding:24px;text-align:center;background:linear-gradient(180deg,#fbfcff,#f6f8ff);break-inside:avoid}"
+    + ".hero .hl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin-bottom:10px}"
+    + ".hero .hnum{font-family:Unbounded,sans-serif;font-weight:800;font-size:48px;line-height:1;letter-spacing:-.02em;background:"+GRAD+";-webkit-background-clip:text;background-clip:text;color:transparent}"
+    + ".hero .hnum .u{font-size:22px}"
+    + ".hero .hm{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6b6b78;margin-top:10px}"
+    + ".hero .hnet{margin-top:6px;font-size:14px;font-weight:600}"
+    + ".hero .hnet b{color:hsl(160,55%,36%)}"
+    + ".hero .hv{display:inline-flex;align-items:center;gap:8px;margin-top:15px;background:hsl(160,55%,95%);border-radius:999px;padding:8px 16px;font-size:13.5px;font-weight:600}"
+    + ".hero .hv .vb{font-family:Unbounded,sans-serif;font-weight:800;font-size:16px;color:hsl(160,60%,36%)}"
+    // данные о компании
+    + ".co-grid{display:flex;flex-wrap:wrap;gap:8px}"
+    + ".co-chip{border:1px solid #ececef;border-radius:10px;padding:9px 13px;font-size:13px;background:#fafafb}"
+    + ".co-chip b{font-weight:800}.co-empty{color:#9a9aa6;font-size:13px}"
+    // карточки
     + ".card{border:1px solid #ececef;border-radius:14px;padding:15px 17px;margin-bottom:11px;break-inside:avoid}"
     + ".chead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}"
     + ".cnum{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;font-weight:500}"
@@ -1055,39 +1101,40 @@ function buildReportHtml(tariff, company){
     + ".chip b{color:#15151b}"
     + ".ceff{display:flex;flex-direction:column;gap:3px;font-size:13px;border-top:1px solid #ececef;padding-top:10px}"
     + ".ceff b{font-weight:800}.ceff .fot b{color:hsl(220,82%,50%)}.ceff .rev{color:hsl(160,55%,38%)}.ceff .rev b{color:hsl(160,55%,36%)}"
-    + ".tot{border:1px solid #ececef;border-radius:16px;overflow:hidden;break-inside:avoid;margin-top:6px}"
-    + ".trow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:12px 18px;border-bottom:1px solid #ececef}"
+    // таблицы
+    + ".tot{border:1px solid #ececef;border-radius:14px;overflow:hidden;break-inside:avoid}"
+    + ".trow{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 16px;border-bottom:1px solid #ececef;font-size:13.5px}"
+    + ".trow:last-child{border-bottom:0}"
     + ".trow .tv{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}"
-    + ".trow.cost .tv{color:hsl(18,70%,45%)}"
-    + ".grand{padding:18px;background:#fafafb;border-bottom:1px solid #ececef;text-align:center;break-inside:avoid}"
-    + ".grand .gl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#9a9aa6;font-weight:700;margin-bottom:8px}"
-    + ".grand .gnum{font-family:Unbounded,sans-serif;font-weight:800;font-size:40px;line-height:1;letter-spacing:-.02em;background:linear-gradient(95deg,hsl(265,75%,58%),hsl(220,82%,56%),hsl(160,60%,46%));-webkit-background-clip:text;background-clip:text;color:transparent}"
-    + ".grand .gm{font-family:'JetBrains Mono',monospace;font-size:13px;color:#6b6b78;margin-top:9px}"
-    + ".verdict{display:flex;align-items:center;gap:10px;padding:14px 18px;background:hsl(160,55%,96%);font-size:14px;font-weight:600}"
-    + ".verdict .vb{font-family:Unbounded,sans-serif;font-weight:800;font-size:18px;background:linear-gradient(90deg,hsl(175,65%,42%),hsl(160,60%,42%));-webkit-background-clip:text;background-clip:text;color:transparent}"
-    + ".verdict svg{width:20px;height:20px;color:hsl(160,60%,44%);flex:none}"
+    + ".trow.total{background:#fafafb;font-weight:800}.trow.total .tv{color:hsl(18,70%,45%)}"
     + ".rec{margin-top:12px;border:1px dashed #d8d8de;border-radius:12px;padding:13px 16px;font-size:13px;color:#6b6b78}"
-    + ".ft{margin-top:22px;color:#9a9aa6;font-size:10.5px;border-top:1px solid #ececef;padding-top:12px}"
+    + ".ft{margin-top:8px;color:#9a9aa6;font-size:10.5px;border-top:1px solid #ececef;padding-top:12px}"
     + ".noprint{margin-top:24px;text-align:center}"
     + ".noprint button{font-family:Manrope,sans-serif;font-size:14px;font-weight:800;color:#fff;border:0;border-radius:10px;padding:12px 26px;cursor:pointer;background:linear-gradient(95deg,hsl(245,80%,60%),hsl(195,80%,50%))}"
-    + "@media print{.noprint{display:none}body{padding:0}.spectrum{margin-bottom:18px}}"
+    + "@media print{.noprint{display:none}body{padding:0}.spectrum{margin-bottom:16px}}"
     + "</style></head><body>"
     + "<div class='spectrum'></div>"
     + "<header>"+companyLine+"<p class='eyebrow'>Bitrix24 · BitrixGPT · Экономический эффект</p>"
-    + "<h1 class='wordmark'>Сколько сэкономит BitrixGPT</h1>"
-    + "<div class='meta'>Отчёт сформирован "+dateStr+" · тариф «"+tariff.name+"»</div>"
-    + "<p class='lede'>"+intro+"</p></header>"
-    + "<section><p class='sec-eyebrow'>Выбранные сценарии</p>"+cards+"</section>"
-    + "<section style='margin-top:24px'><p class='sec-eyebrow'>Итог</p><div class='tot'>"
-    + "<div class='trow'><span>Суммарная экономия ФОТ</span><span class='tv'>"+fmtMoney(totalFot)+"/мес · "+fmtMoney(totalFot*12)+"/год</span></div>"
-    + "<div class='trow'><span>Суммарный прирост выручки</span><span class='tv'>"+fmtMoney(totalRev)+"/мес · "+fmtMoney(totalRev*12)+"/год</span></div>"
-    + "<div class='grand'><div class='gl'>Общий эффект BitrixGPT за год</div><div class='gnum'>"+fmtMoney(grandYear)+"</div><div class='gm'>"+fmtMoney(grand)+" / мес</div></div>"
-    + "<div class='trow cost'><span>"+costName+"</span><span class='tv'>"+costPrefix+fmtMoney(costYear)+"/год · "+costPrefix+fmtMoney(costYear/12)+"/мес</span></div>"
-    + "<div class='verdict'><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'><path d='M20 6 9 17l-5-5'/></svg><span>"+verdictTxt+" <span class='vb'>"+ratioTxt+"×</span></span></div>"
-    + "</div>"
+    + "<h1 class='wordmark'>Экономический эффект BitrixGPT</h1>"
+    + "<div class='meta'>Отчёт сформирован "+dateStr+" · тариф «"+tariff.name+"»</div></header>"
+    // 1) ЭФФЕКТ
+    + "<section><div class='hero'>"
+    + "<div class='hl'>Общий эффект BitrixGPT за год</div>"
+    + "<div class='hnum'>"+fmtMoney(grandYear)+"</div>"
+    + "<div class='hm'>"+fmtMoney(grand)+" / мес</div>"
+    + "<div class='hnet'>Чистая выгода 1-го года (за вычетом затрат): <b>"+fmtMoney(net1)+"</b></div>"
+    + (costs1>0 && net1>0 ? "<div class='hv'><svg viewBox='0 0 24 24' fill='none' stroke='hsl(160,60%,40%)' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round' style='width:18px;height:18px'><path d='M20 6 9 17l-5-5'/></svg><span>Эффект за год больше затрат 1-го года в <span class='vb'>"+ratioTxt+"×</span></span></div>" : "")
+    + "</div></section>"
+    // 2) РАСШИФРОВКА: данные о компании
+    + "<section><p class='sec-eyebrow'>Данные о компании</p>"+coChips+"</section>"
+    // расшифровка эффекта
+    + "<section><p class='sec-eyebrow'>Из чего складывается эффект</p><div class='tot'>"+effRows+"</div></section>"
+    // 3) по каждому блоку
+    + "<section><p class='sec-eyebrow'>Экономия по сценариям</p>"+cards+"</section>"
+    // 4) затраты
+    + "<section><p class='sec-eyebrow'>Затраты 1-го года</p><div class='tot'>"+costRows+"</div>"
     + (recommend ? "<div class='rec'>"+recommend+"</div>" : "")
-    + "</section>"
-    + "<div class='ft'>Расчёт носит оценочный характер. Налоговая модель упрощённая (оклад на руки × 1,4); стоимость часа = оклад × 1,4 ÷ 176. Цены подписки BitrixGPT приведены при оплате за год.</div>"
+    + "<div class='ft'>Расчёт носит оценочный характер. Налоговая модель упрощённая (оклад на руки × 1,4); стоимость часа = оклад × 1,4 ÷ 176. Цены подписки BitrixGPT — при оплате за год.</div></section>"
     + "<div class='noprint'><button onclick='window.print()'>Печать / Сохранить в PDF</button></div>"
     + "<scr"+"ipt>(function(){function go(){window.print();}if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){setTimeout(go,200);});setTimeout(go,1600);}else{window.onload=function(){setTimeout(go,400);};}})();</scr"+"ipt>"
     + "</body></html>";
