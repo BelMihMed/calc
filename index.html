@@ -42,6 +42,13 @@
     border-radius:10px;padding:12px 16px;font-size:14px;margin-bottom:22px;
   }
 
+  /* данные о компании */
+  .company{background:linear-gradient(180deg,#fef8ee,#fffdf9);border:1.5px solid #f2e2c4;
+    border-radius:18px;padding:18px 20px;margin-bottom:18px;box-shadow:var(--shadow)}
+  .company-head{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;color:#a9701f}
+  .company-head svg{width:20px;height:20px}
+  .company-sub{font-size:13px;color:var(--b24-muted);margin:6px 0 14px}
+
   /* группа CRM */
   .group-crm{
     background:linear-gradient(180deg,#eef6fd,#f7fafd);
@@ -124,6 +131,10 @@
   }
   .more:hover{text-decoration:underline}
   .more svg{width:14px;height:14px}
+  .more{cursor:pointer}
+  .card-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:16px 0 6px}
+  .card-meta .tags{margin-top:0}
+  .card-meta .more{margin-top:0}
   .tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
   .tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:20px;letter-spacing:.2px}
   .tag.fot{background:var(--b24-soft-blue);color:var(--b24-blue)}
@@ -150,6 +161,14 @@
   .res-row.total{border-top:1px dashed #d6e0ec;margin-top:6px;padding-top:10px;font-size:15px}
   .res-row.total .val{color:var(--b24-blue)}
   .res-row .val.rev{color:var(--b24-green)}
+  .segment{border:1px dashed var(--b24-line);border-radius:11px;padding:12px 14px;margin-top:12px;background:#fbfcfe}
+  .seg-head{display:flex;justify-content:space-between;align-items:center;font-size:13px;font-weight:600;color:var(--b24-muted);margin-bottom:8px}
+  .segment .fields{margin:0}
+  .seg-del{background:none;border:0;color:#d23f3f;font-size:12.5px;cursor:pointer;font-weight:600}
+  .seg-del:hover{text-decoration:underline}
+  .addseg{margin-top:12px;background:none;border:1px dashed var(--b24-blue);color:var(--b24-blue);
+    border-radius:9px;padding:8px 14px;font:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
+  .addseg:hover{background:var(--b24-soft-blue)}
   .breakdown{font-size:12.5px;color:var(--b24-muted);margin:2px 0 8px;padding-left:2px}
   .breakdown div{padding:2px 0}
   .note{font-size:13px;color:#5a6b82;background:#fffaf0;border:1px solid #f3e6c4;border-radius:9px;padding:10px 13px;margin-top:12px}
@@ -228,6 +247,24 @@
   .modal-x:hover{color:var(--b24-text)}
   .modal .info-text{font-size:14.5px;color:var(--b24-text);line-height:1.6;margin:6px 0 0}
 
+  /* слайдер (боковая панель) */
+  .drawer-overlay{position:fixed;inset:0;z-index:1200;background:rgba(20,40,70,.5);
+    opacity:0;visibility:hidden;transition:opacity .25s,visibility .25s}
+  .drawer-overlay.open{opacity:1;visibility:visible}
+  .drawer{position:absolute;top:0;right:0;height:100%;width:min(760px,94vw);background:#fff;
+    box-shadow:-12px 0 44px rgba(0,0,0,.28);display:flex;flex-direction:column;
+    transform:translateX(100%);transition:transform .3s ease}
+  .drawer-overlay.open .drawer{transform:none}
+  .drawer-head{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--b24-line);flex:none}
+  .drawer-title{flex:1;font-size:15px;font-weight:700;color:var(--b24-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .drawer-ext{font-size:13px;font-weight:600;color:var(--b24-blue);text-decoration:none;white-space:nowrap}
+  .drawer-ext:hover{text-decoration:underline}
+  .drawer-x{background:none;border:0;font-size:26px;line-height:1;color:var(--b24-muted);cursor:pointer;padding:0 6px}
+  .drawer-x:hover{color:var(--b24-text)}
+  .drawer-body{flex:1;min-height:0;overflow:auto}
+  .drawer-body iframe{width:100%;height:100%;border:0;display:block}
+  .drawer-text{padding:22px 24px;font-size:15px;line-height:1.65;color:var(--b24-text)}
+
   .foot{text-align:center;color:var(--b24-muted);font-size:12.5px;margin-top:22px}
   @media(max-width:560px){
     .head{padding:20px}
@@ -249,13 +286,28 @@
     <div class="navchips">
       <button class="chip" data-go="sec-crm">Сценарии в CRM</button>
       <button class="chip" data-go="sec-agents">ИИ-агенты</button>
-      <button class="chip" data-go="sec-other">Другие</button>
-      <button class="chip" data-go="sec-vibe">VibeCode</button>
+      <button class="chip" data-go="sec-other">Общие</button>
       <button class="chip go-summary" data-go="sec-summary">Итог ↓</button>
     </div>
     <div class="mini">
       <span class="cnt" id="nav-count">Ничего не выбрано</span>
       <span id="nav-total"></span>
+    </div>
+  </div>
+
+  <div class="company" id="company">
+    <div class="company-head">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/></svg>
+      <span>Данные о компании</span>
+    </div>
+    <div class="company-sub">Заполните один раз — значения подставятся в поля сценариев ниже. В каждом блоке их можно поменять; обратно данные о компании не меняются.</div>
+    <div class="fields">
+      <div class="field"><label>Сотрудников всего</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="empCount" placeholder="напр. 50"><span class="suf">чел.</span></div></div>
+      <div class="field"><label>Средняя ЗП</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="empSal" placeholder="напр. 100 000"><span class="suf">₽/мес</span></div></div>
+      <div class="field"><label>Менеджеров по продажам</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="mgrCount" placeholder="напр. 5"><span class="suf">чел.</span></div></div>
+      <div class="field"><label>ЗП менеджера</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="mgrSal" placeholder="напр. 100 000"><span class="suf">₽/мес</span></div></div>
+      <div class="field"><label>РОПов</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="ropCount" placeholder="напр. 1"><span class="suf">чел.</span></div></div>
+      <div class="field"><label>ЗП РОПа</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="ropSal" placeholder="напр. 200 000"><span class="suf">₽/мес</span></div></div>
     </div>
   </div>
 
@@ -334,11 +386,11 @@ const scenarios = [
     title:"Повторные продажи по базе",
     sub:"BitrixGPT генерирует повторные продажи по существующей базе и ставит менеджерам сделки, которые те закрывают.",
     link:"https://helpdesk.bitrix24.ru/open/25376986/",
-    role:"Эффект на уровне выручки", effect:["rev"], crm:true,
+    role:"Эффект на уровне выручки", effect:["rev"], crm:true, revLabel:"Потенциал базы",
     fields:[
       {k:"base",  label:"Размер базы клиентов",            def:1000,  suf:"шт."},
       {k:"check", label:"Средний чек сделки",              def:50000, suf:"₽"},
-      {k:"conv",  label:"Конверсия в повторную продажу",   def:0.10,  suf:"доля", locked:true},
+      {k:"conv",  label:"Конверсия в повторную продажу",   def:0.10,  suf:"доля"},
     ],
     compute:v=>{
       const rev = v.base * v.conv * v.check;
@@ -502,37 +554,23 @@ const scenarios = [
   },
   {
     id:7,
-    title:"Общее повышение эффективности (BitrixGPT для всех)",
-    sub:"Любой сотрудник использует BitrixGPT для личной эффективности: обсуждения, идеи, тексты, обратная связь. Средняя оценка прироста — 10%.",
-    link:"https://helpdesk.bitrix24.ru/open/18505482/",
-    role:"Все сотрудники на портале", effect:["fot"],
-    fields:[
-      {k:"emp", label:"Всего сотрудников на портале", def:1,      suf:"чел."},
-      {k:"sal", label:"Средний оклад сотрудника",     def:100000, suf:"₽/мес"},
-      {k:"eff", label:"Прирост эффективности",        def:0.10,   suf:"доля"},
-    ],
-    compute:v=>{
-      const fot = v.sal * TAX * v.eff * v.emp;
-      return {fot, rev:0};
-    }
-  },
-  {
-    id:8,
-    title:"VibeCode",
-    sub:"Инициативные сотрудники (~10%) с помощью VibeCode автоматизируют свою работу и процессы в отделе/компании. Консервативная оценка повышения их личной эффективности – 30%.",
+    title:"VibeCode и BitrixGPT",
+    sub:"Сотрудники упрощают и автоматизируют свою работу. Часть работает в чате с нейросетью, часть создаёт приложения и повышает личную эффективность и скорость бизнес-процессов компании.",
     link:"https://helpdesk.bitrix24.ru/open/28505406/",
-    role:"Инициативные сотрудники", effect:["fot"], vibe:true,
+    role:"Все сотрудники", effect:["fot"],
     fields:[
-      {k:"emp",   label:"Всего сотрудников",                  def:10,     suf:"чел."},
-      {k:"share", label:"Доля инициативных",                 def:0.10,   suf:"доля"},
-      {k:"sal",   label:"Оклад инициативного сотрудника",    def:100000, suf:"₽/мес"},
-      {k:"simp",  label:"Упрощение работы",                  def:0.30,   suf:"доля"},
+      {k:"emp",   label:"Всего сотрудников",  def:10,     suf:"чел.", src:"empCount"},
+      {k:"share", label:"Доля инициативных",  def:0.10,   suf:"доля"},
+      {k:"simp",  label:"Упрощение работы",   def:0.30,   suf:"доля"},
+      {k:"sal",   label:"Средняя ЗП",         def:100000, suf:"₽/мес", src:"empSal"},
     ],
     compute:v=>{
-      const initiative = Math.round(v.emp * v.share);   // матем. округление
-      const fot = v.sal * TAX * v.simp * initiative;
+      const init = Math.round(v.emp * v.share);          // инициативные
+      const non  = Math.max(0, v.emp - init);            // остальные
+      const full = v.sal * TAX;                          // полная стоимость сотрудника
+      const fot  = non * full * 0.10 + init * full * v.simp;  // 10% на всех + доп. на инициативных
       return {fot, rev:0, breakdown:[
-        ["Инициативных сотрудников", initiative, "int"],
+        ["Инициативных сотрудников", init, "int"],
       ]};
     },
     qualitative:"После работы активных сотрудников бизнес-процессы компании в среднем ускоряются и повышают эффективность на ~20%."
@@ -606,21 +644,12 @@ otherGroup.className = "group-other";
 otherGroup.id = "sec-other";
 otherGroup.innerHTML = '<div class="group-label">'
   + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>'
-  + '<span>Другие сценарии</span></div>';
+  + '<span>Общие сценарии</span></div>';
 root.appendChild(otherGroup);
-
-// контейнер для группы VibeCode
-const vibeGroup = document.createElement("div");
-vibeGroup.className = "group-vibe";
-vibeGroup.id = "sec-vibe";
-vibeGroup.innerHTML = '<div class="group-label">'
-  + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>'
-  + '<span>VibeCode</span></div>';
-root.appendChild(vibeGroup);
 
 scenarios.forEach((sc, idx)=>{
   const num = idx + 1;
-  state[sc.id] = {selected:false, values:{}};
+  state[sc.id] = {selected:false, values:{}, segments:[]};
   sc.fields.forEach(f=> state[sc.id].values[f.k] = f.def);
 
   const card = document.createElement("div");
@@ -629,11 +658,11 @@ scenarios.forEach((sc, idx)=>{
 
   const tags = sc.effect.map(e=> e==="fot"
     ? '<span class="tag fot">Экономия ФОТ</span>'
-    : '<span class="tag rev">Прирост выручки</span>').join("")
+    : `<span class="tag rev">${sc.revLabel||"Прирост выручки"}</span>`).join("")
     + `<span class="tag role">${sc.role}</span>`;
 
   const more = sc.link
-    ? `<a class="more" href="${sc.link}" target="_blank" rel="noopener noreferrer">${ICON_INFO}Подробнее</a>`
+    ? `<a class="more" href="${sc.link}" data-slide="${sc.link}" data-title="${sc.title}" rel="noopener noreferrer">${ICON_INFO}Подробнее о возможностях</a>`
     : "";
 
   const fieldsHtml = sc.fields.map(f=>{
@@ -658,18 +687,19 @@ scenarios.forEach((sc, idx)=>{
       <div class="card-title">
         <div class="t">${num}. ${sc.title}</div>
         <div class="s">${sc.sub}</div>
-        ${more}
-        <div class="tags">${tags}</div>
       </div>
     </div>
     <div class="card-body">
+      <div class="card-meta"><div class="tags">${tags}</div>${more}</div>
       <div class="fields">${fieldsHtml}</div>
+      <div class="segwrap" id="seg-${sc.id}"></div>
+      <button class="addseg" data-id="${sc.id}">+ добавить сегмент</button>
       <div class="result" id="res-${sc.id}"></div>
       ${sc.note?`<div class="note">${sc.note}</div>`:''}
       ${sc.qualitative?`<div class="note">${sc.qualitative}</div>`:''}
     </div>`;
 
-  (sc.crm ? crmGroup : sc.agents ? agentsGroup : sc.vibe ? vibeGroup : otherGroup).appendChild(card);
+  (sc.crm ? crmGroup : sc.agents ? agentsGroup : otherGroup).appendChild(card);
 
   // toggle (клик по ссылке "Подробнее" не переключает сценарий)
   const chk = card.querySelector(".chk");
@@ -682,12 +712,88 @@ scenarios.forEach((sc, idx)=>{
   });
 
   // ввод чисел с разделителями разрядов
-  card.querySelectorAll(".num-in:not([disabled])").forEach(inp=>{
+  card.querySelectorAll(".fields .num-in:not([disabled])").forEach(inp=>{
     inp.addEventListener("input", ()=>{
       const n = onNumInput(inp);
       state[sc.id].values[inp.dataset.k] = inp.dataset.pct ? n/100 : n;  // % -> доля
       recompute();
     });
+  });
+
+  card.querySelector(".addseg").addEventListener("click", ()=> addSegment(sc));
+});
+
+/* ---------- Сегменты (повторяемые наборы полей) ---------- */
+function segmentFieldsHtml(sc){
+  return sc.fields.map(f=>{
+    const isPct = f.suf==="доля";
+    const dispDef = isPct ? Math.round(f.def*1000)/10 : f.def;
+    const suf = isPct ? "%" : f.suf;
+    return `<div class="field ${f.locked?'locked':''}">
+        <label>${f.label}</label>
+        <div class="in"><input type="text" inputmode="decimal" class="num-in" value="${groupFmt(String(dispDef))}" data-k="${f.k}"${isPct?' data-pct="1"':''} ${f.locked?'disabled':''}><span class="suf">${suf}</span></div>
+      </div>`;
+  }).join("");
+}
+function addSegment(sc){
+  const vals = {};
+  sc.fields.forEach(f=> vals[f.k] = f.def);
+  state[sc.id].segments.push(vals);
+  const number = state[sc.id].segments.length + 1;   // сегмент 1 — основной
+  const block = document.createElement("div");
+  block.className = "segment";
+  block.innerHTML = `<div class="seg-head"><span>Сегмент ${number}</span><button class="seg-del">Удалить</button></div><div class="fields">${segmentFieldsHtml(sc)}</div>`;
+  document.getElementById("seg-"+sc.id).appendChild(block);
+  block.querySelectorAll(".num-in:not([disabled])").forEach(inp=>{
+    inp.addEventListener("input", ()=>{
+      const n = onNumInput(inp);
+      vals[inp.dataset.k] = inp.dataset.pct ? n/100 : n;
+      recompute();
+    });
+  });
+  block.querySelector(".seg-del").addEventListener("click", ()=>{
+    const i = state[sc.id].segments.indexOf(vals);
+    if(i>=0) state[sc.id].segments.splice(i,1);
+    block.remove();
+    recompute();
+  });
+  recompute();
+}
+// суммарный расчёт по основному набору + всем сегментам
+function computeScenario(sc, st){
+  const sets = [st.values].concat(st.segments || []);
+  let fot=0, rev=0, breakdown=null;
+  sets.forEach(vals=>{
+    const r = sc.compute(vals);
+    fot += r.fot; rev += (r.rev||0);
+    if(r.breakdown){
+      if(!breakdown) breakdown = r.breakdown.map(b=>[b[0], b[1], b[2]]);
+      else r.breakdown.forEach((b,j)=>{ if(breakdown[j]) breakdown[j][1] += b[1]; });
+    }
+  });
+  return {fot, rev, breakdown};
+}
+
+/* ---------- Данные о компании: автозаполнение полей блоков ---------- */
+// [id сценария, ключ поля] для каждого показателя компании
+const AUTOFILL = {
+  empCount:[[9,"mgr"],[10,"emp"],[11,"emp"],[3,"emp"],[7,"emp"]],
+  empSal:  [[9,"sal"],[10,"sal"],[11,"empSal"],[3,"sal"],[7,"sal"]],
+  mgrCount:[[1,"mgr"]],
+  mgrSal:  [[1,"sal"]],
+  ropCount:[[4,"rop"]],
+  ropSal:  [[4,"sal"]],
+};
+document.querySelectorAll(".comp-in").forEach(inp=>{
+  inp.addEventListener("input", ()=>{
+    const val = onNumInput(inp);
+    (AUTOFILL[inp.dataset.comp] || []).forEach(([scId, fk])=>{
+      if(!state[scId]) return;
+      state[scId].values[fk] = val;
+      const target = document.querySelector(`#card-${scId} .num-in[data-k="${fk}"]`);
+      if(target) target.value = groupFmt(String(val));
+    });
+    recompute();
   });
 });
 
@@ -730,7 +836,7 @@ function recompute(){
     selectedCount++;
     if(sc.qualitative) showQual = true;
 
-    const r = sc.compute(st.values);
+    const r = computeScenario(sc, st);
     const fotY = r.fot*12, revY = r.rev*12;
     totalFot += r.fot; totalRev += r.rev;
 
@@ -746,8 +852,9 @@ function recompute(){
       rows += row("Экономия ФОТ, год", fmtMoney(fotY));
     }
     if(sc.effect.includes("rev")){
-      rows += row("Прирост выручки, месяц", fmtMoney(r.rev), "rev");
-      rows += row("Прирост выручки, год", fmtMoney(revY), "rev");
+      const rl = sc.revLabel || "Прирост выручки";
+      rows += row(rl+", месяц", fmtMoney(r.rev), "rev");
+      rows += row(rl+", год", fmtMoney(revY), "rev");
     }
     const totMonth = r.fot + r.rev;
     if(sc.effect.length>1){
@@ -833,7 +940,7 @@ function collectResults(){
   scenarios.forEach((sc, idx)=>{
     const st = state[sc.id];
     if(!st.selected) return;
-    const r = sc.compute(st.values);
+    const r = computeScenario(sc, st);
     totalFot += r.fot; totalRev += r.rev;
     items.push({
       num: idx+1, title: sc.title, effect: sc.effect, fot: r.fot, rev: r.rev,
@@ -997,8 +1104,7 @@ const INFO = {
   11:"Сотрудники экономят время на планировании и сборе итога дня, руководители — на чтении отчётов. Минуты в день переводим в часы за месяц и умножаем на стоимость часа. Складываем эффект сотрудников и руководителей.",
   12:"Экономия ФОТ: число обзвонов в месяц (записей × звонков на запись) × минуты на звонок, в часах × стоимость часа администратора. Плюс выручка от возвращённых неявок: записей × процент неявок × процент возвращённых × средний чек.",
   6:"Транскрибация встреч даёт три эффекта: встречи короче на 15%, участников меньше на 15% и ассистент не тратит время на протокол. Каждый эффект — это минуты × число встреч × стоимость минуты; всё суммируется.",
-  7:"Полная стоимость сотрудника в месяц (оклад × 1,4) × процент прироста эффективности × число сотрудников.",
-  8:"Берём процент инициативных сотрудников от общего числа, умножаем на полную стоимость сотрудника (оклад × 1,4) и на процент упрощения их работы.",
+  7:"Считаем в два слагаемых. Все сотрудники (полная стоимость = ЗП × 1,4) получают +10% эффективности. Инициативные (доля от общего числа) — дополнительно по проценту «упрощение работы» (по умолчанию 30%). Экономия = сумма обоих эффектов.",
 };
 const SUMMARY_INFO = "Складываем экономию ФОТ по всем выбранным сценариям и отдельно — прирост выручки. Их сумма — общий эффект. Годовые суммы = месячные × 12. Ниже сравниваем эффект за год со стоимостью подписки BitrixGPT. Стоимость часа работы = оклад на руки × 1,4 ÷ 176 рабочих часов.";
 
@@ -1012,24 +1118,50 @@ infoModal.innerHTML = "<div class='modal'>"
   + "</div>";
 document.querySelector(".wrap").appendChild(infoModal);
 
-function openInfo(key){
-  const t = document.getElementById("info-title");
-  const x = document.getElementById("info-text");
-  if(key==="summary"){
-    t.textContent = "Как считается общий эффект";
-    x.textContent = SUMMARY_INFO;
-  } else {
-    const sc = scenarios.find(s=>String(s.id)===String(key));
-    t.textContent = sc ? "Как считается: " + sc.title : "Как считается";
-    x.textContent = INFO[key] || "";
-  }
-  infoModal.hidden = false;
+/* ---------- Слайдер (боковая панель) ---------- */
+const drawer = document.createElement("div");
+drawer.className = "drawer-overlay";
+drawer.innerHTML = "<div class='drawer'>"
+  + "<div class='drawer-head'><span class='drawer-title' id='drawer-title'></span>"
+  + "<a class='drawer-ext' id='drawer-ext' target='_blank' rel='noopener' hidden>Открыть в отдельном окне ↗</a>"
+  + "<button class='drawer-x' id='drawer-x' aria-label='Закрыть'>×</button></div>"
+  + "<div class='drawer-body' id='drawer-body'></div></div>";
+document.body.appendChild(drawer);
+const drawerBody = drawer.querySelector("#drawer-body");
+const drawerTitle = drawer.querySelector("#drawer-title");
+const drawerExt = drawer.querySelector("#drawer-ext");
+function openDrawer(){ drawer.classList.add("open"); }
+function closeDrawer(){
+  drawer.classList.remove("open");
+  setTimeout(()=>{ if(!drawer.classList.contains("open")) drawerBody.innerHTML=""; }, 300);
 }
-function closeInfo(){ infoModal.hidden = true; }
-document.getElementById("info-x").addEventListener("click", closeInfo);
-document.getElementById("info-ok").addEventListener("click", closeInfo);
-infoModal.addEventListener("click", e=>{ if(e.target===infoModal) closeInfo(); });
+function openDrawerFrame(url, title){
+  drawerTitle.textContent = title || "Подробнее о возможностях";
+  drawerExt.href = url; drawerExt.hidden = false;
+  drawerBody.innerHTML = "<iframe src='" + url + "' title='" + (title||"") + "'></iframe>";
+  openDrawer();
+}
+function openDrawerText(title, text){
+  drawerTitle.textContent = title;
+  drawerExt.hidden = true;
+  drawerBody.innerHTML = "<div class='drawer-text'></div>";
+  drawerBody.querySelector(".drawer-text").textContent = text;
+  openDrawer();
+}
+drawer.querySelector("#drawer-x").addEventListener("click", closeDrawer);
+drawer.addEventListener("click", e=>{ if(e.target===drawer) closeDrawer(); });
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeDrawer(); });
+
+function openInfo(key){
+  if(key==="summary"){ openDrawerText("Как считается общий эффект", SUMMARY_INFO); return; }
+  const sc = scenarios.find(s=>String(s.id)===String(key));
+  openDrawerText(sc ? "Как считается: " + sc.title : "Как считается", INFO[key] || "");
+}
+
+// клики: ссылка «Подробнее» → слайдер с лендингом; иконка «i» → слайдер с пояснением
 document.addEventListener("click", e=>{
+  const m = e.target.closest(".more[data-slide]");
+  if(m){ e.preventDefault(); openDrawerFrame(m.dataset.slide, m.dataset.title); return; }
   const b = e.target.closest(".info-btn");
   if(b) openInfo(b.dataset.info);
 });
