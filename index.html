@@ -364,8 +364,8 @@ const scenarios = [
       {k:"sal",   label:"Оклад менеджера (на руки)",        def:100000,   suf:"₽/мес"},
       {k:"calls", label:"Звонков в день на менеджера",      def:20,       suf:"шт."},
       {k:"time",  label:"Время обработки одного звонка",    def:10,       suf:"мин"},
-      {k:"plan",  label:"План менеджера",                   def:1000000,  suf:"₽/мес"},
-      {k:"coef",  label:"Доля эффективно потраченного сэкономленного времени", def:0.3, suf:"доля"},
+      {k:"plan",  label:"План менеджера",                   def:1000000,  suf:"₽/мес", revOnly:true},
+      {k:"coef",  label:"Доля эффективно потраченного сэкономленного времени", def:0.3, suf:"доля", revOnly:true},
     ],
     compute:v=>{
       const savedMinDay = v.calls * v.time;
@@ -672,7 +672,7 @@ scenarios.forEach((sc, idx)=>{
     ? `<a class="more" href="${sc.link}" data-slide="${sc.link}" data-title="${sc.title}" rel="noopener noreferrer">${ICON_INFO}Подробнее о возможностях</a>`
     : "";
 
-  const fieldsHtml = sc.fields.map(f=>{
+  const fieldsHtml = sc.fields.filter(f=> !(f.revOnly && HIDE_REVENUE)).map(f=>{
     const isPct = f.suf==="доля";                       // доли вводим как проценты
     const dispDef = isPct ? Math.round(f.def*1000)/10 : f.def;
     const suf = isPct ? "%" : f.suf;
@@ -963,8 +963,7 @@ function collectResults(){
     if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else if(revShown(sc)) totalRev += r.rev;
     if(typeof integratorCost==="function") totalInt += integratorCost(sc);   // услуги (только в serv)
     items.push({
-      num: idx+1, title: sc.title, effect: sc.effect, revLabel: sc.revLabel, fot: r.fot, rev: r.rev,
-      params: sc.fields.map(f=>({label:f.label, val:fieldDisplay(f, st.values[f.k])})),
+      num: idx+1, title: sc.title, sub: sc.sub, effect: sc.effect, revLabel: sc.revLabel, fot: r.fot, rev: r.rev,
     });
   });
   return {items, totalFot, totalRev, totalPot, totalInt};
@@ -1049,12 +1048,11 @@ function buildReportHtml(tariff, company){
   const revName = it => (it.revLabel || "Прирост выручки");
   const cards = items.map(it=>{
     const num2 = String(it.num).padStart(2,"0");
-    const chips = it.params.map(p=>"<span class='chip'>"+p.label+": <b>"+p.val+"</b></span>").join("");
     let eff="";
     if(it.effect.includes("fot")) eff += "<div class='fot'>Экономия ФОТ — <b>"+fmtMoney(it.fot)+"</b>/мес · "+fmtMoney(it.fot*12)+"/год</div>";
     if(it.effect.includes("rev") && (it.revLabel==="Потенциал базы" || !HIDE_REVENUE)) eff += "<div class='rev'>"+revName(it)+" — <b>"+fmtMoney(it.rev)+"</b>/мес · "+fmtMoney(it.rev*12)+"/год</div>";
     return "<div class='card'><div class='chead'><span class='cnum'>"+num2+"</span><span class='ctitle'>"+it.title+"</span></div>"
-      + "<div class='cparams'>"+chips+"</div><div class='ceff'>"+eff+"</div></div>";
+      + "<div class='cdesc'>"+(it.sub||"")+"</div><div class='ceff'>"+eff+"</div></div>";
   }).join("");
 
   const coChips = comp.length
@@ -1068,8 +1066,14 @@ function buildReportHtml(tariff, company){
 
   // строки затрат
   let costRows = "<div class='trow'><span>Рекомендуемый тариф Bitrix24 — «"+tgtName+"»</span><span class='tv'>"+fmtMoney(TAR_M[targetKey])+"/мес · "+fmtMoney(tgtTariffY)+"/год</span></div>";
-  costRows += "<div class='trow'><span>"+tariffLabel+"</span><span class='tv'>"+(payTariffY>0?fmtMoney(payTariffY)+"/год":"0 ₽")+"</span></div>";
-  costRows += "<div class='trow'><span>Подписка BitrixGPT ("+tgtName+")</span><span class='tv'>"+fmtMoney(tgtSubY)+"/год</span></div>";
+  if(special || curIdx===0){
+    // полная стоимость тарифа уже указана в строке выше — отдельной строкой не дублируем
+  } else if(payTariffY>0){
+    costRows += "<div class='trow'><span>Доплата за тариф с «"+TAR_NAME[tariff.id]+"» до «"+tgtName+"»</span><span class='tv'>"+fmtMoney(payTariffY)+"/год</span></div>";
+  } else {
+    costRows += "<div class='trow'><span>Тариф «"+TAR_NAME[tariff.id]+"» — уже подключён</span><span class='tv'>0 ₽</span></div>";
+  }
+  costRows += "<div class='trow'><span>Подписка BitrixGPT ("+tgtName+")</span><span class='tv'>"+fmtMoney(tgtSubY/12)+"/мес · "+fmtMoney(tgtSubY)+"/год</span></div>";
   if(totalInt>0) costRows += "<div class='trow'><span>Настройка от интегратора (разово)</span><span class='tv'>"+fmtMoney(totalInt)+"</span></div>";
   costRows += "<div class='trow total'><span>Итого стоимость перехода (1-й год)</span><span class='tv'>"+fmtMoney(costs1)+"</span></div>";
 
@@ -1108,7 +1112,7 @@ function buildReportHtml(tariff, company){
     + ".chead{display:flex;align-items:baseline;gap:10px;margin-bottom:10px}"
     + ".cnum{font-family:'JetBrains Mono',monospace;font-size:12px;color:#9a9aa6;font-weight:500}"
     + ".ctitle{font-weight:800;font-size:15px;letter-spacing:-.01em}"
-    + ".cparams{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:11px}"
+    + ".cdesc{color:#6b6b78;font-size:13px;line-height:1.5;margin-bottom:11px}"
     + ".chip{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#3a3a44;background:#fafafb;border:1px solid #ececef;border-radius:8px;padding:4px 9px}"
     + ".chip b{color:#15151b}"
     + ".ceff{display:flex;flex-direction:column;gap:3px;font-size:13px;border-top:1px solid #ececef;padding-top:10px}"
