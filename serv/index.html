@@ -1276,7 +1276,15 @@ function openInfo(key){
 // клики: ссылка «Подробнее» → слайдер с лендингом; иконка «i» → слайдер с пояснением
 document.addEventListener("click", e=>{
   const m = e.target.closest(".more[data-slide]");
-  if(m){ e.preventDefault(); openDrawerFrame(m.dataset.slide, m.dataset.title); return; }
+  if(m){
+    e.preventDefault();
+    const url = m.dataset.slide;
+    // внешние сайты (helpdesk) запрещают встраивание в iframe — открываем в новой вкладке;
+    // свои лендинги показываем в слайдере
+    if(/^https?:\/\//i.test(url)) window.open(url, "_blank", "noopener");
+    else openDrawerFrame(url, m.dataset.title);
+    return;
+  }
   const b = e.target.closest(".info-btn");
   if(b) openInfo(b.dataset.info);
 });
