@@ -48,6 +48,10 @@
   .company-head{display:flex;align-items:center;gap:9px;font-size:15px;font-weight:700;color:#a9701f}
   .company-head svg{width:20px;height:20px}
   .company-sub{font-size:13px;color:var(--b24-muted);margin:6px 0 14px}
+  .company-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+  .company-col{display:flex;flex-direction:column;gap:12px}
+  .comp-in.prefilled{color:#c19a4b;font-style:italic}
+  @media(max-width:600px){.company-cols{grid-template-columns:1fr}}
 
   /* группа CRM */
   .group-crm{
@@ -271,8 +275,8 @@
   .drawer-ext:hover{text-decoration:underline}
   .drawer-x{background:none;border:0;font-size:26px;line-height:1;color:var(--b24-muted);cursor:pointer;padding:0 6px}
   .drawer-x:hover{color:var(--b24-text)}
-  .drawer-body{flex:1;min-height:0;overflow:auto}
-  .drawer-body iframe{width:100%;height:100%;border:0;display:block}
+  .drawer-body{flex:1;min-height:0;overflow:auto;position:relative}
+  .drawer-body iframe{position:absolute;inset:0;width:100%;height:100%;border:0;display:block}
   .drawer-text{padding:22px 24px;font-size:15px;line-height:1.65;color:var(--b24-text)}
 
   .foot{text-align:center;color:var(--b24-muted);font-size:12.5px;margin-top:22px}
@@ -310,21 +314,27 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 9h.01M9 13h.01M9 17h.01M15 9h.01M15 13h.01M15 17h.01"/></svg>
       <span>Данные о компании</span>
     </div>
-    <div class="company-sub">Заполните один раз — значения подставятся в поля сценариев ниже. В каждом блоке их можно поменять; обратно данные о компании не меняются.</div>
-    <div class="fields">
-      <div class="field"><label>Сотрудников всего</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="empCount" placeholder="напр. 50"><span class="suf">чел.</span></div></div>
-      <div class="field"><label>Средняя ЗП</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="empSal" placeholder="напр. 100 000"><span class="suf">₽/мес</span></div></div>
-      <div class="field"><label>Менеджеров по продажам</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="mgrCount" placeholder="напр. 5"><span class="suf">чел.</span></div></div>
-      <div class="field"><label>ЗП менеджера</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="mgrSal" placeholder="напр. 100 000"><span class="suf">₽/мес</span></div></div>
-      <div class="field"><label>РОПов</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="ropCount" placeholder="напр. 1"><span class="suf">чел.</span></div></div>
-      <div class="field"><label>ЗП РОПа</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in" data-comp="ropSal" placeholder="напр. 200 000"><span class="suf">₽/мес</span></div></div>
+    <div class="company-sub">Заполните один раз — значения подставятся в поля сценариев ниже. При желании их можно вручную скорректировать для каждого блока отдельно.</div>
+    <div class="company-cols">
+      <div class="company-col">
+        <div class="field"><label>Сотрудников всего</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in prefilled" data-comp="empCount" value="50"><span class="suf">чел.</span></div></div>
+        <div class="field"><label>Средняя ЗП</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in prefilled" data-comp="empSal" value="100 000"><span class="suf">₽/мес</span></div></div>
+      </div>
+      <div class="company-col">
+        <div class="field"><label>Менеджеров по продажам</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in prefilled" data-comp="mgrCount" value="5"><span class="suf">чел.</span></div></div>
+        <div class="field"><label>ЗП менеджера</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in prefilled" data-comp="mgrSal" value="100 000"><span class="suf">₽/мес</span></div></div>
+      </div>
+      <div class="company-col">
+        <div class="field"><label>РОПов</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in prefilled" data-comp="ropCount" value="1"><span class="suf">чел.</span></div></div>
+        <div class="field"><label>ЗП РОПа</label><div class="in"><input type="text" inputmode="decimal" class="num-in comp-in prefilled" data-comp="ropSal" value="200 000"><span class="suf">₽/мес</span></div></div>
+      </div>
     </div>
   </div>
 
   <div id="scenarios"></div>
 
   <div class="summary" id="sec-summary">
-    <h2>Общий эффект BitrixGPT <button class="info-btn" data-info="summary" aria-label="Как считается общий эффект"></button></h2>
+    <h2>Общий эффект BitrixGPT</h2>
     <div id="summary-body"></div>
     <button class="dl-btn" id="dl-btn" disabled>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -396,7 +406,7 @@ const scenarios = [
     title:"Повторные продажи по базе",
     sub:"BitrixGPT генерирует повторные продажи по существующей базе и ставит менеджерам сделки, которые те закрывают.",
     link:"https://helpdesk.bitrix24.ru/open/25376986/",
-    role:"Эффект на уровне выручки", effect:["rev"], crm:true, revLabel:"Потенциал базы",
+    role:"Эффект на уровне выручки", effect:["rev"], crm:true, revLabel:"Потенциал базы", segments:true,
     fields:[
       {k:"base",  label:"Размер базы клиентов",            def:1000,  suf:"шт."},
       {k:"check", label:"Средний чек сделки",              def:50000, suf:"₽"},
@@ -499,22 +509,17 @@ const scenarios = [
     title:"Агент онлайн-записи",
     sub:"Голосовой ИИ-агент сам обзванивает клиентов по онлайн-записи: подтверждает визит, напоминает, реагирует на опоздание и сохраняет исход в карточке — вместо ручного обзвона администратором.",
     link:"zapis-bitrix24.html",
-    role:"Администратор / ресепшн", effect:["fot","rev"], agents:true,
-    note:"Прирост выручки считается только по возвращённым неявкам — консервативно, без накрутки.",
+    role:"Администратор / ресепшн", effect:["fot"], agents:true,
     fields:[
       {k:"visits",  label:"Записей (визитов) в месяц",  def:800,   suf:"шт."},
       {k:"perRec",  label:"Звонков на одну запись",     def:2,     suf:"шт."},
       {k:"time",    label:"Время на звонок вручную",    def:3,     suf:"мин"},
       {k:"admSal",  label:"Оклад администратора",       def:60000, suf:"₽/мес"},
-      {k:"check",   label:"Средний чек визита",         def:2000,  suf:"₽"},
-      {k:"noShow",  label:"Доля неявок сейчас",         def:0.20,  suf:"доля"},
-      {k:"recover", label:"Доля возвращённых неявок",   def:0.30,  suf:"доля"},
     ],
     compute:v=>{
       const savedHoursMonth = v.visits * v.perRec * v.time / 60;
       const fot = savedHoursMonth * costHour(v.admSal);
-      const rev = v.visits * v.noShow * v.recover * v.check;
-      return {fot, rev};
+      return {fot, rev:0};
     }
   },
   {
@@ -702,8 +707,7 @@ scenarios.forEach((sc, idx)=>{
     <div class="card-body">
       <div class="card-meta"><div class="tags">${tags}</div>${more}</div>
       <div class="fields">${fieldsHtml}</div>
-      <div class="segwrap" id="seg-${sc.id}"></div>
-      <button class="addseg" data-id="${sc.id}">+ добавить сегмент</button>
+      ${sc.segments?`<div class="segwrap" id="seg-${sc.id}"></div><button class="addseg" data-id="${sc.id}">+ добавить сегмент</button>`:''}
       <div class="result" id="res-${sc.id}"></div>
       ${sc.note?`<div class="note">${sc.note}</div>`:''}
       ${sc.qualitative?`<div class="note">${sc.qualitative}</div>`:''}
@@ -730,7 +734,8 @@ scenarios.forEach((sc, idx)=>{
     });
   });
 
-  card.querySelector(".addseg").addEventListener("click", ()=> addSegment(sc));
+  const addBtn = card.querySelector(".addseg");
+  if(addBtn) addBtn.addEventListener("click", ()=> addSegment(sc));
 });
 
 /* ---------- Сегменты (повторяемые наборы полей) ---------- */
@@ -794,15 +799,21 @@ const AUTOFILL = {
   ropCount:[[4,"rop"]],
   ropSal:  [[4,"sal"]],
 };
+function applyCompany(inp){
+  const val = parseNum(inp.value);
+  (AUTOFILL[inp.dataset.comp] || []).forEach(([scId, fk])=>{
+    if(!state[scId]) return;
+    state[scId].values[fk] = val;
+    const target = document.querySelector(`#card-${scId} .num-in[data-k="${fk}"]`);
+    if(target) target.value = groupFmt(String(val));
+  });
+}
 document.querySelectorAll(".comp-in").forEach(inp=>{
+  applyCompany(inp);   // подставить предзаполненные значения в блоки на старте
   inp.addEventListener("input", ()=>{
-    const val = onNumInput(inp);
-    (AUTOFILL[inp.dataset.comp] || []).forEach(([scId, fk])=>{
-      if(!state[scId]) return;
-      state[scId].values[fk] = val;
-      const target = document.querySelector(`#card-${scId} .num-in[data-k="${fk}"]`);
-      if(target) target.value = groupFmt(String(val));
-    });
+    inp.classList.remove("prefilled");   // ручной ввод — стандартный цвет
+    onNumInput(inp);
+    applyCompany(inp);
     recompute();
   });
 });
@@ -824,7 +835,7 @@ function plural(n, forms){ // forms = [один, два, пять]
 
 /* ---------- Пересчёт ---------- */
 function recompute(){
-  let totalFot=0, totalRev=0, totalInt=0, anySelected=false, showQual=false, selectedCount=0;
+  let totalFot=0, totalRev=0, totalPot=0, totalInt=0, anySelected=false, showQual=false, selectedCount=0;
 
   scenarios.forEach(sc=>{
     const st = state[sc.id];
@@ -848,7 +859,8 @@ function recompute(){
 
     const r = computeScenario(sc, st);
     const fotY = r.fot*12, revY = r.rev*12;
-    totalFot += r.fot; totalRev += r.rev;
+    totalFot += r.fot;
+    if(sc.revLabel==="Потенциал базы") totalPot += r.rev; else totalRev += r.rev;
     const intCost = integratorCost(sc);
     totalInt += intCost;
 
@@ -877,14 +889,14 @@ function recompute(){
     resEl.innerHTML = rows;
   });
 
-  renderSummary(totalFot, totalRev, anySelected, showQual, totalInt);
+  renderSummary(totalFot, totalRev, totalPot, anySelected, showQual, totalInt);
 
   // обновление панели навигации
   const cntEl = document.getElementById("nav-count");
   const totEl = document.getElementById("nav-total");
   if(selectedCount){
     cntEl.textContent = "Выбрано: " + selectedCount + " " + plural(selectedCount, ["сценарий","сценария","сценариев"]);
-    totEl.innerHTML = "Эффект: <b>" + fmtMoney(totalFot + totalRev) + "/мес</b>";
+    totEl.innerHTML = "Эффект: <b>" + fmtMoney(totalFot + totalRev + totalPot) + "/мес</b>";
   } else {
     cntEl.textContent = "Ничего не выбрано";
     totEl.innerHTML = "";
@@ -905,14 +917,14 @@ function integratorCost(sc){
 }
 
 /* ---------- Итоговый блок ---------- */
-function renderSummary(fot, rev, any, qual, integ){
+function renderSummary(fot, rev, pot, any, qual, integ){
   const el = document.getElementById("summary-body");
   document.getElementById("dl-btn").disabled = !any;
   if(!any){
     el.innerHTML = '<div class="empty">Выберите хотя бы один сценарий, чтобы увидеть совокупный эффект.</div>';
     return;
   }
-  const grand = fot + rev;
+  const grand = fot + rev + pot;
   const grandYear = grand*12;
   const netYear = grandYear - integ;
   const ratio = netYear / COST_YEAR;
@@ -927,6 +939,9 @@ function renderSummary(fot, rev, any, qual, integ){
       <div class="lbl">Суммарный прирост выручки</div>
       <div class="num">${fmtMoney(rev)}</div>
       <div class="num year">${fmtMoney(rev*12)}</div>
+      ${pot>0?`<div class="lbl">Раскрытый потенциал базы</div>
+      <div class="num">${fmtMoney(pot)}</div>
+      <div class="num year">${fmtMoney(pot*12)}</div>`:''}
       <div class="sum-line"></div>
       <div class="lbl row-total">Общий эффект BitrixGPT</div>
       <div class="num grand eco">${fmtMoney(grand)}</div>
