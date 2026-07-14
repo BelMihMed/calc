@@ -22,11 +22,14 @@ assistant-bitrix24.html         ← лендинг: Личный ассисте�
 zapis-bitrix24.html             ← лендинг: Агент онлайн-записи
 documents-bitrix24.html         ← лендинг: Генерация документов
 README.md
+package.json                    ← команда npm test для проверки формул
 docs/
   TZ.md                         ← техзадание: формулы, сценарии, эталонные примеры
 build/
   build_landings.py             ← генератор лендингов (ассистент/запись/документы)
   build_landing_support.py      ← генератор лендинга поддержки
+tests/
+  formulas.test.mjs             ← тесты формул и эталонных сумм
 ```
 
 > Важно: ссылки «Подробнее» в калькуляторе **относительные**, поэтому все 6 HTML-файлов
@@ -63,6 +66,12 @@ git push -u origin main
 ```bash
 python3 build/build_landings.py         # -> assistant / zapis / documents
 python3 build/build_landing_support.py  # -> podderzhka
+```
+
+## Проверка формул
+Тесты читают реальный `index.html`, извлекают из него сценарии и проверяют дефолтные суммы:
+```bash
+npm test
 ```
 
 ## Методика расчёта
